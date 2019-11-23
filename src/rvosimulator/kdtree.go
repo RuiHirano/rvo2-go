@@ -74,12 +74,9 @@ func NewKdTree() *KdTree {
 // CHECK OK
 // ?
 func (kt *KdTree) BuildAgentTree() {
-	//fmt.Printf("FN: BuildAgentTree %v\n", Sim.Agents)
 	// sim ...
 	if len(kt.Agents) < len(Sim.Agents) {
 		for i := len(kt.Agents); i < len(Sim.Agents); i++ {
-			//			fmt.Printf("FN: BuildAgentTree\n ID %v\n Position: %v\n MaxNeighbors: %v\n MaxSpeed; %v\nNeighborDist: %v\n Radius: %v\n TimeHorizon: %v\n TimeHorizonObst: %v\n Velocity: %v\n\n",
-			//				Sim.Agents[i].ID, Sim.Agents[i].Position, Sim.Agents[i].MaxNeighbors, Sim.Agents[i].MaxSpeed, Sim.Agents[i].NeighborDist, Sim.Agents[i].Radius, Sim.Agents[i].TimeHorizon, Sim.Agents[i].TimeHorizonObst, Sim.Agents[i].Velocity)
 
 			kt.Agents = append(kt.Agents, Sim.Agents[i])
 		}
@@ -93,7 +90,7 @@ func (kt *KdTree) BuildAgentTree() {
 	}
 
 	if len(kt.Agents) != 0 {
-		//		fmt.Printf("FN: To BuildAgentTreeRecursive\n")
+		fmt.Printf("FN: To BuildAgentTreeRecursive\n")
 		kt.BuildAgentTreeRecursive(0, len(kt.Agents), 0)
 	}
 }
@@ -101,8 +98,7 @@ func (kt *KdTree) BuildAgentTree() {
 // Position is wrong ,,, node Max is Wrong
 // FINISH
 func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
-	//fmt.Printf("node: %v", node)
-	//fmt.Printf("node: %v", kt.AgentTree[node])
+
 	kt.AgentTree[node].Begin = begin
 	kt.AgentTree[node].End = end
 	kt.AgentTree[node].MinX = kt.Agents[begin].Position.X
@@ -119,7 +115,6 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 		//		fmt.Printf("FN: BuildAgentTreeRecurcive\n Begin %v\n End: %v\n Left: %v\n Right; %v\n MaxX %v\n MaxY: %v\n MinX: %v\n MinY; %v\n\n",
 		//			kt.AgentTree[node].Begin, kt.AgentTree[node].End, kt.AgentTree[node].Left, kt.AgentTree[node].Right, kt.AgentTree[node].MaxX, kt.AgentTree[node].MaxY, kt.AgentTree[node].MinX, kt.AgentTree[node].MinY)
 	}
-
 	if end-begin > MAX_LEAF_SIZE {
 		isVertical := (kt.AgentTree[node].MaxX-kt.AgentTree[node].MinX > kt.AgentTree[node].MaxY-kt.AgentTree[node].MinY)
 		left := begin
@@ -128,38 +123,83 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 
 		if isVertical {
 			splitValue = 0.5 * (kt.AgentTree[node].MaxX + kt.AgentTree[node].MinX)
-			leftPosition = kt.Agents[left].Position.X
-			rightPosition = kt.Agents[right-1].Position.X
+			//leftPosition = kt.Agents[left].Position.X
+			//rightPosition = kt.Agents[right-1].Position.X
 		} else {
 			splitValue = 0.5 * (kt.AgentTree[node].MaxY + kt.AgentTree[node].MinY)
-			leftPosition = kt.Agents[left].Position.Y
-			rightPosition = kt.Agents[right-1].Position.Y
+			//leftPosition = kt.Agents[left].Position.Y
+			//rightPosition = kt.Agents[right-1].Position.Y
 		}
 
 		for {
 			if left < right {
 				for {
 
+					if left < right{
+						if isVertical {
+							leftPosition = kt.Agents[left].Position.X
+						} else {
+							leftPosition = kt.Agents[left].Position.Y
+						}
+
+						if leftPosition < splitValue{
+							left++
+						}else {
+							break
+						}
+
+					}else{
+						break
+					}
+					/*if isVertical {
+						leftPosition = kt.Agents[left].Position.X
+					} else {
+						leftPosition = kt.Agents[left].Position.Y
+					}
+
 					if left < right && leftPosition < splitValue {
+						fmt.Printf("left \n")
 						left++
 					} else {
 						break
-					}
+					}*/
 
 				}
 
 				for {
+					if right > left{
+						if isVertical {
+							rightPosition = kt.Agents[right-1].Position.X
+						} else {
+							rightPosition = kt.Agents[right-1].Position.Y
+						}
+						if rightPosition >= splitValue{
+							right--
+						}else{
+							break
+						}
+					}else{
+						break
+					}
+
+					/*if isVertical {
+						rightPosition = kt.Agents[right-1].Position.X
+					} else {
+						rightPosition = kt.Agents[right-1].Position.Y
+					}
+
 					if right > left && rightPosition >= splitValue {
+						fmt.Printf("right \n")
 						right--
 					} else {
 						break
-					}
+					}*/
 				}
 
 				if left < right {
 					// swap array
 					t := kt.Agents[left]
-					fmt.Printf("FN: right-1 %v\n", right-1)
+					//fmt.Printf("FN: right-1 %v\n", right-1)
 					kt.Agents[left] = kt.Agents[right-1]
 					kt.Agents[right-1] = t
 
