@@ -12,6 +12,7 @@ func init() {
 	MAX_LEAF_SIZE = 10
 }
 
+// KdTree :
 type KdTree struct {
 	ObstacleTree *ObstacleTreeNode
 	AgentTree    []*AgentTreeNode
@@ -19,6 +20,7 @@ type KdTree struct {
 	Obstacles    []*Obstacle
 }
 
+// AgentTreeNode :
 type AgentTreeNode struct {
 	Begin int
 	End   int
@@ -30,12 +32,14 @@ type AgentTreeNode struct {
 	MinY  float64
 }
 
+// ObstacleTreeNode
 type ObstacleTreeNode struct {
 	Left     *ObstacleTreeNode
 	Right    *ObstacleTreeNode
 	Obstacle *Obstacle
 }
 
+// NewAgentTreeNode :
 func NewAgentTreeNode() *AgentTreeNode {
 	a := &AgentTreeNode{
 		Begin: 0,
@@ -50,6 +54,7 @@ func NewAgentTreeNode() *AgentTreeNode {
 	return a
 }
 
+// NewObstacleTreeNode :
 func NewObstacleTreeNode() *ObstacleTreeNode {
 	o := &ObstacleTreeNode{
 		Left:     nil,
@@ -59,21 +64,16 @@ func NewObstacleTreeNode() *ObstacleTreeNode {
 	return o
 }
 
+// NewKdTree :
 func NewKdTree() *KdTree {
-	//agents := make([]*Agent, 0)
-	//agentTreeNode := make([]*AgentTreeNode, 0)
-	//obstacles := make([]*Obstacle, 0)
-	//obstacleTree := make([]*ObstacleTreeNode, 0)
 	k := &KdTree{
 		ObstacleTree: nil,
 	}
 	return k
 }
 
-// CHECK OK
-// ?
+// BuildAgentTree :
 func (kt *KdTree) BuildAgentTree() {
-	// sim ...
 	if len(kt.Agents) < len(Sim.Agents) {
 		for i := len(kt.Agents); i < len(Sim.Agents); i++ {
 
@@ -89,13 +89,11 @@ func (kt *KdTree) BuildAgentTree() {
 	}
 
 	if len(kt.Agents) != 0 {
-		//fmt.Printf("FN: To BuildAgentTreeRecursive\n")
 		kt.BuildAgentTreeRecursive(0, len(kt.Agents), 0)
 	}
 }
 
-// Position is wrong ,,, node Max is Wrong
-// FINISH
+// BuildAgentTreeRecursive :
 func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 
 	kt.AgentTree[node].Begin = begin
@@ -111,8 +109,6 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 		kt.AgentTree[node].MinX = math.Min(kt.AgentTree[node].MinX, kt.Agents[i].Position.X)
 		kt.AgentTree[node].MaxY = math.Max(kt.AgentTree[node].MaxY, kt.Agents[i].Position.Y)
 		kt.AgentTree[node].MinY = math.Min(kt.AgentTree[node].MinY, kt.Agents[i].Position.Y)
-		//		fmt.Printf("FN: BuildAgentTreeRecurcive\n Begin %v\n End: %v\n Left: %v\n Right; %v\n MaxX %v\n MaxY: %v\n MinX: %v\n MinY; %v\n\n",
-		//			kt.AgentTree[node].Begin, kt.AgentTree[node].End, kt.AgentTree[node].Left, kt.AgentTree[node].Right, kt.AgentTree[node].MaxX, kt.AgentTree[node].MaxY, kt.AgentTree[node].MinX, kt.AgentTree[node].MinY)
 	}
 	if end-begin > MAX_LEAF_SIZE {
 		isVertical := (kt.AgentTree[node].MaxX-kt.AgentTree[node].MinX > kt.AgentTree[node].MaxY-kt.AgentTree[node].MinY)
@@ -122,12 +118,8 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 
 		if isVertical {
 			splitValue = 0.5 * (kt.AgentTree[node].MaxX + kt.AgentTree[node].MinX)
-			//leftPosition = kt.Agents[left].Position.X
-			//rightPosition = kt.Agents[right-1].Position.X
 		} else {
 			splitValue = 0.5 * (kt.AgentTree[node].MaxY + kt.AgentTree[node].MinY)
-			//leftPosition = kt.Agents[left].Position.Y
-			//rightPosition = kt.Agents[right-1].Position.Y
 		}
 
 		for {
@@ -150,19 +142,6 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 					} else {
 						break
 					}
-					/*if isVertical {
-						leftPosition = kt.Agents[left].Position.X
-					} else {
-						leftPosition = kt.Agents[left].Position.Y
-					}
-
-					if left < right && leftPosition < splitValue {
-						fmt.Printf("left \n")
-						left++
-					} else {
-						break
-					}*/
-
 				}
 
 				for {
@@ -180,25 +159,11 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 					} else {
 						break
 					}
-
-					/*if isVertical {
-						rightPosition = kt.Agents[right-1].Position.X
-					} else {
-						rightPosition = kt.Agents[right-1].Position.Y
-					}
-
-					if right > left && rightPosition >= splitValue {
-						fmt.Printf("right \n")
-						right--
-					} else {
-						break
-					}*/
 				}
 
 				if left < right {
-					// swap array
+					// Swap array
 					t := kt.Agents[left]
-					//fmt.Printf("FN: right-1 %v\n", right-1)
 					kt.Agents[left] = kt.Agents[right-1]
 					kt.Agents[right-1] = t
 
@@ -222,43 +187,28 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 		kt.BuildAgentTreeRecursive(begin, left, kt.AgentTree[node].Left)
 		kt.BuildAgentTreeRecursive(left, end, kt.AgentTree[node].Right)
 
-		//		fmt.Printf("FN: BuildAgentTreeRecurcive\n > MAX_LEAF \n Begin %v\n End: %v\n Left: %v\n Right; %v\n MaxX %v\n MaxY: %v\n MinX: %v\n MinY; %v\n\n",
-		//			kt.AgentTree[node].Begin, kt.AgentTree[node].End, kt.AgentTree[node].Left, kt.AgentTree[node].Right, kt.AgentTree[node].MaxX, kt.AgentTree[node].MaxY, kt.AgentTree[node].MinX, kt.AgentTree[node].MinY)
 	}
 }
 
-// CHECK OK
+// BuildObstacleTree :
 func (kt *KdTree) BuildObstacleTree() {
 
-	//fmt.Printf("FN: BuildObstacleTree\n")
 	kt.DeleteObstacleTree(kt.ObstacleTree)
 
-	// sim.Obstaclesをobstaclesに格納する
 	obstacles := make([]*Obstacle, len(Sim.Obstacles))
-	//fmt.Printf("FN: BuildObstacleTree\n ID %v\n Point: %v\n\n",
-	//	len(obstacles), len(Sim.Obstacles))
 	for i := 0; i < len(Sim.Obstacles); i++ {
 		obstacles[i] = Sim.Obstacles[i]
-		//		fmt.Printf("FN: BuildObstacleTree\n ID %v\n Point: %v\n IsConvex: %v\n UnitDir; %v\n\n",
-		//			obstacles[i].ID, obstacles[i].Point, obstacles[i].IsConvex, obstacles[i].UnitDir)
 	}
 
 	kt.ObstacleTree = kt.BuildObstacleTreeRecursive(obstacles)
 }
 
-// CHECK OK
-// FINISH
+// BuildObstacleTreeRecursive
 func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTreeNode {
-	//	fmt.Printf("FN: BuildObstacleTreeRecursive\n len(obstacles): %v \n\n",
-	//		len(obstacles))
 	if len(obstacles) == 0 {
-		//var node *ObstacleTreeNode
-		//		fmt.Printf("FN: BuildObstacleTreeRecursive\n len(obstacles) == 0 \n ObstacleID: %v\n\n",
-		//			node)
 		return nil
 	} else {
 		node := NewObstacleTreeNode()
-		//fmt.Printf("FN: BuildObstacleTreeRecursive\n")
 
 		optimalSplit := 0
 		minLeft := len(obstacles)
@@ -299,15 +249,10 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 
 			}
 
-			// ここを通過する回数がおかしい
-			// 二回目のleft, rightがおかしい
-			//			fmt.Printf("FN: BuildObstacleTreeRecursive\n i: %v\n leftSize: %v\n rightSize %v \n minLeft:  %v \nminRight:  %v  \n\n",
-			//				i, leftSize, rightSize, minLeft, minRight)
 			if math.Max(float64(leftSize), float64(rightSize)) < math.Max(float64(minLeft), float64(minRight)) || (math.Max(float64(leftSize), float64(rightSize)) == math.Max(float64(minLeft), float64(minRight)) && math.Min(float64(leftSize), float64(rightSize)) < math.Min(float64(minLeft), float64(minRight))) {
 				minLeft = leftSize
 				minRight = rightSize
 				optimalSplit = i
-				//				fmt.Printf("FN: BuildObstacleTreeRecursive optimalSplit &v\n\n", i)
 			}
 
 		}
@@ -319,13 +264,11 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 
 		leftCounter := 0
 		rightCounter := 0
-		i := optimalSplit //　ここが原因
+		i := optimalSplit
 
 		var obstacleI1, obstacleI2 *Obstacle
 		obstacleI1 = obstacles[i]
 		obstacleI2 = obstacleI1.NextObstacle
-		//fmt.Printf("FN: BuildObstacleTreeRecursive\n obstacleI1: %v\n\n",
-		//	obstacles[0].NextObstacle)
 
 		for j := 0; j < len(obstacles); j++ {
 			if i == j {
@@ -340,18 +283,13 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 			j1LeftOfI = LeftOf(obstacleI1.Point, obstacleI2.Point, obstacleJ1.Point)
 			j2LeftOfI = LeftOf(obstacleI1.Point, obstacleI2.Point, obstacleJ2.Point)
 
-			//			fmt.Printf("FN: BuildObstacleTreeRecursive\n j1LeftOfI: %v\n j2LeftOfI: %v \n obI1.Po:  %v \nobI2.Po:  %v \nobJ1.Po:  %v \nobJ2.Po:  %v \n\n",
-			//				j1LeftOfI, j2LeftOfI, obstacleI1.Point, obstacleI2.Point, obstacleJ1.Point, obstacleJ2.Point)
 			if j1LeftOfI >= -RVO_EPSILON && j2LeftOfI >= -RVO_EPSILON {
-				//				fmt.Printf("FN: BuildObstacleTreeRecursive\n if1 \n\n")
 				leftObstacles[leftCounter] = obstacles[j]
 				leftCounter++
 			} else if j1LeftOfI <= RVO_EPSILON && j2LeftOfI <= RVO_EPSILON {
-				//				fmt.Printf("FN: BuildObstacleTreeRecursive\n if2 \n\n")
 				rightObstacles[rightCounter] = obstacles[j]
 				rightCounter++
 			} else {
-				//				fmt.Printf("FN: BuildObstacleTreeRecursive\n if3 \n\n")
 				var t float64
 				t = Det(Sub(obstacleI2.Point, obstacleI1.Point), Sub(obstacleJ1.Point, obstacleI1.Point)) / Det(Sub(obstacleI2.Point, obstacleI1.Point), Sub(obstacleJ1.Point, obstacleJ2.Point))
 
@@ -371,8 +309,6 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 				obstacleJ1.NextObstacle = newObstacle
 				obstacleJ2.PrevObstacle = newObstacle
 
-				//				fmt.Printf("FN: BuildObstacleTreeRecursive\n leftCounter: %v\n len(leftObstacles) %v \n\n",
-				//					leftCounter, len(leftObstacles))
 				if j1LeftOfI > 0.0 {
 					leftObstacles[leftCounter] = obstacleJ1
 					rightObstacles[rightCounter] = newObstacle
@@ -392,33 +328,29 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 		node.Left = kt.BuildObstacleTreeRecursive(leftObstacles)
 		node.Right = kt.BuildObstacleTreeRecursive(rightObstacles)
 
-		//		fmt.Printf("FN: BuildObstacleTreeRecursive\n len(obstacles) != 0 \n ObstacleID: %v\n\n",
-		//			node.Obstacle.ID)
 		return node
 	}
 }
 
-//OK
+// ComputeAgentNeighbors :
 func (kt *KdTree) ComputeAgentNeighbors(agent *Agent, rangeSq float64) {
 	kt.QueryAgentTreeRecursive(agent, rangeSq, 0)
 }
 
-//OK
+// ComputeObstacleNeighbors :
 func (kt *KdTree) ComputeObstacleNeighbors(agent *Agent, rangeSq float64) {
 	kt.QueryObstacleTreeRecursive(agent, rangeSq, kt.ObstacleTree)
 }
 
-//OK
+// DeleteObstacleTree :
 func (kt *KdTree) DeleteObstacleTree(node *ObstacleTreeNode) {
 	if node != nil {
 		kt.DeleteObstacleTree(node.Left)
 		kt.DeleteObstacleTree(node.Right)
-		//delete node
 	}
 }
 
-// CHECK OK
-// FINISH
+// QueryAgentTreeRecursive
 func (kt *KdTree) QueryAgentTreeRecursive(agent *Agent, rangeSq float64, node int) {
 	if kt.AgentTree[node].End-kt.AgentTree[node].Begin <= MAX_LEAF_SIZE {
 		for i := kt.AgentTree[node].Begin; i < kt.AgentTree[node].End; i++ {
@@ -430,11 +362,6 @@ func (kt *KdTree) QueryAgentTreeRecursive(agent *Agent, rangeSq float64, node in
 
 		distSqRight = math.Pow(math.Max(0, kt.AgentTree[kt.AgentTree[node].Right].MinX-agent.Position.X), 2) + math.Pow(math.Max(0, agent.Position.X-kt.AgentTree[kt.AgentTree[node].Right].MaxX), 2) + math.Pow(math.Max(0, kt.AgentTree[kt.AgentTree[node].Right].MinY-agent.Position.Y), 2) + math.Pow(math.Max(0, agent.Position.Y-kt.AgentTree[kt.AgentTree[node].Right].MaxY), 2)
 
-		//		fmt.Printf("FN: QueryAgentTreeRecursive \n distSqLeft: %v\n\n",
-		//			distSqLeft)
-
-		//		fmt.Printf("FN: QueryAgentTreeRecursive \n distSqRight: %v\n\n",
-		//			distSqRight)
 		if distSqLeft < distSqRight {
 			if distSqLeft < rangeSq {
 				kt.QueryAgentTreeRecursive(agent, rangeSq, kt.AgentTree[node].Left)
@@ -457,10 +384,8 @@ func (kt *KdTree) QueryAgentTreeRecursive(agent *Agent, rangeSq float64, node in
 
 }
 
-// CHECK OK
-// FINISH
+// QueryObstacleTreeRecursive
 func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node *ObstacleTreeNode) {
-	//	fmt.Printf("QueryObstacleTreeRecursive %v\n", node.Obstacle)
 	if node == nil {
 		return
 	} else {
@@ -481,15 +406,8 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 
 		distSqLine = math.Pow(agentLeftOfLine, 2) / Sqr(Sub(obstacle2.Point, obstacle1.Point))
 
-		//		fmt.Printf("FN: QueryObstacleTreeRecursive \n distSqLine: %v\n\n",
-		//			distSqLine)
-
 		if distSqLine < rangeSq {
 			if agentLeftOfLine < 0 {
-				/*
-				 * Try obstacle at this node only if agent is on Right side of
-				 * obstacle (and can see obstacle).
-				 */
 				agent.InsertObstacleNeighbor(node.Obstacle, rangeSq)
 			}
 
@@ -506,13 +424,13 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 	}
 }
 
-// FINISH
+// QueryVisibility
 func (kt *KdTree) QueryVisibility(q1 *Vector2, q2 *Vector2, radius float64) bool {
 	result := kt.QueryVisibilityRecursive(q1, q2, radius, kt.ObstacleTree)
 	return result
 }
 
-// FINISH
+// QueryVisibilityRecursive
 func (kt *KdTree) QueryVisibilityRecursive(q1 *Vector2, q2 *Vector2, radius float64, node *ObstacleTreeNode) bool {
 	if node == nil {
 		return true

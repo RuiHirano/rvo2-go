@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"log"
 
-	
 	rvo "../../src/rvosimulator"
 )
 
@@ -162,7 +161,7 @@ func setupScenario(sim *rvo.RVOSimulator, scaledAgents []Agent) {
 	for _, agent := range scaledAgents {
 		position := &rvo.Vector2{X: float64(agent.Coord.Lat), Y: float64(agent.Coord.Lon)}
 		velocity := &rvo.Vector2{X: float64(agent.Velocity.Lat), Y: float64(agent.Velocity.Lon)}
-		id, _ := sim.AddAgentPosition(position)
+		id, _ := sim.AddDefaultAgent(position)
 		sim.SetAgentPrefVelocity(id, velocity)
 		sim.SetAgentMaxSpeed(id, rvo.Abs(velocity))
 	}

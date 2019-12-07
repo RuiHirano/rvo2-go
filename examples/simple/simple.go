@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
+	rvo "../../src/rvosimulator"
 )
 
 func setupScenario(sim *rvo.RVOSimulator) {
@@ -14,12 +14,12 @@ func setupScenario(sim *rvo.RVOSimulator) {
 		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 2, Y: 1})
 	}
 
-	obstaclesPosition := []*rvo.Vector2{
+	obstacle1 := []*rvo.Vector2{
 		&rvo.Vector2{X: 0.1, Y: 0.1},
 		&rvo.Vector2{X: -0.1, Y: 0.1},
 		&rvo.Vector2{X: -0.1, Y: -0.1},
 	}
-	sim.AddObstacle(obstaclesPosition)
+	sim.AddObstacle(obstacle1)
 	sim.ProcessObstacles()
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
@@ -30,7 +30,7 @@ func main() {
 	sim := rvo.NewRVOSimulator(float64(1)/60, 1.5, 5, 1.5, 2, 0.4, 2, &rvo.Vector2{X: 0, Y: 0})
 	setupScenario(sim)
 
-	for step := 0; step < 5; step++ {
+	for step := 0; step < 20; step++ {
 		sim.DoStep()
 
 		var agentPositions string

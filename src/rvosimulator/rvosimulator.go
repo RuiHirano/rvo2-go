@@ -1,7 +1,5 @@
 package rvosimulator
 
-//import "fmt"
-
 var (
 	Sim *RVOSimulator
 )
@@ -116,7 +114,7 @@ func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNe
 	return len(rvo.Agents) - 1, false
 }
 
-// AddObstacle :
+// AddObstacle : Add Obstacle with vertices
 func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
 	if len(vertices) < 2 {
@@ -149,9 +147,6 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 		} else {
 			ti = i + 1
 		}
-		// Obstacleを形成する点の間の距離
-		//		fmt.Printf("FN: AddObstacle\n unitDir check \n vertices[ti] %v\n vertices[i]: %v\n normarized: %v\n\n",
-		//			vertices[ti], vertices[i], Normalize(Sub(vertices[ti], vertices[i])))
 
 		obstacle.UnitDir = Normalize(Sub(vertices[ti], vertices[i]))
 
@@ -173,16 +168,12 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
 		rvo.Obstacles = append(rvo.Obstacles, obstacle)
 
-		//		fmt.Printf("FN: AddObstacle\n ID %v\n Point: %v\n IsConvex: %v\n UnitDir; %v\n\n",
-		//			obstacle.ID, obstacle.Point, obstacle.IsConvex, obstacle.UnitDir)
-
 	}
 
 	return obstacleNo, false
 }
 
-// FINISH
-// DoStep :
+// DoStep : Forward Step
 func (rvo *RVOSimulator) DoStep() {
 	rvo.KdTree.BuildAgentTree()
 
@@ -340,7 +331,6 @@ func (rvo *RVOSimulator) QueryVisibility(point1 *Vector2, point2 *Vector2, radiu
 	return rvo.KdTree.QueryVisibility(point1, point2, radius)
 }
 
-// FINISH
 // SetAgentDefaults :
 func (rvo *RVOSimulator) SetAgentDefaults(neighborDist float64, maxNeighbors int, timeHorizon float64, timeHorizonObst float64, radius float64, maxSpeed float64, velocity *Vector2) {
 	if rvo.DefaultAgent == nil {
@@ -381,8 +371,6 @@ func (rvo *RVOSimulator) SetAgentPosition(agentNo int, position *Vector2) {
 // SetAgentPrefVelocity :
 func (rvo *RVOSimulator) SetAgentPrefVelocity(agentNo int, prefVelocity *Vector2) {
 	rvo.Agents[agentNo].PrefVelocity = prefVelocity
-	//	fmt.Printf("FN: SetAgentPrefVelocity\n ID %v\n PrefVelocity %v \n\n",
-	//		rvo.Agents[agentNo].ID, rvo.Agents[agentNo].PrefVelocity)
 
 }
 
