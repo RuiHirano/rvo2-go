@@ -1,7 +1,6 @@
 package rvosimulator
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -55,7 +54,7 @@ func NewObstacleTreeNode() *ObstacleTreeNode {
 	o := &ObstacleTreeNode{
 		Left:     nil,
 		Right:    nil,
-		Obstacle: NewObstacle(),
+		Obstacle: NewEmptyObstacle(),
 	}
 	return o
 }
@@ -90,7 +89,7 @@ func (kt *KdTree) BuildAgentTree() {
 	}
 
 	if len(kt.Agents) != 0 {
-		fmt.Printf("FN: To BuildAgentTreeRecursive\n")
+		//fmt.Printf("FN: To BuildAgentTreeRecursive\n")
 		kt.BuildAgentTreeRecursive(0, len(kt.Agents), 0)
 	}
 }
@@ -135,20 +134,20 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 			if left < right {
 				for {
 
-					if left < right{
+					if left < right {
 						if isVertical {
 							leftPosition = kt.Agents[left].Position.X
 						} else {
 							leftPosition = kt.Agents[left].Position.Y
 						}
 
-						if leftPosition < splitValue{
+						if leftPosition < splitValue {
 							left++
-						}else {
+						} else {
 							break
 						}
 
-					}else{
+					} else {
 						break
 					}
 					/*if isVertical {
@@ -167,18 +166,18 @@ func (kt *KdTree) BuildAgentTreeRecursive(begin int, end int, node int) {
 				}
 
 				for {
-					if right > left{
+					if right > left {
 						if isVertical {
 							rightPosition = kt.Agents[right-1].Position.X
 						} else {
 							rightPosition = kt.Agents[right-1].Position.Y
 						}
-						if rightPosition >= splitValue{
+						if rightPosition >= splitValue {
 							right--
-						}else{
+						} else {
 							break
 						}
-					}else{
+					} else {
 						break
 					}
 
@@ -325,8 +324,8 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 		var obstacleI1, obstacleI2 *Obstacle
 		obstacleI1 = obstacles[i]
 		obstacleI2 = obstacleI1.NextObstacle
-		fmt.Printf("FN: BuildObstacleTreeRecursive\n obstacleI1: %v\n\n",
-			obstacles[0].NextObstacle)
+		//fmt.Printf("FN: BuildObstacleTreeRecursive\n obstacleI1: %v\n\n",
+		//	obstacles[0].NextObstacle)
 
 		for j := 0; j < len(obstacles); j++ {
 			if i == j {
@@ -359,7 +358,7 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 				var splitPoint *Vector2
 				splitPoint = Add(obstacleJ1.Point, MulOne(Sub(obstacleJ2.Point, obstacleJ1.Point), t))
 
-				newObstacle := NewObstacle()
+				newObstacle := NewEmptyObstacle()
 				newObstacle.Point = splitPoint
 				newObstacle.PrevObstacle = obstacleJ1
 				newObstacle.NextObstacle = obstacleJ2

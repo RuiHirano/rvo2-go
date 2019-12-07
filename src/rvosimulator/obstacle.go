@@ -11,7 +11,7 @@ type Obstacle struct {
 }
 
 // NewObstacle : To create new obstacle object
-func NewObstacle() *Obstacle {
+func NewEmptyObstacle() *Obstacle {
 	o := &Obstacle{
 		ID:           0,
 		IsConvex:     false,

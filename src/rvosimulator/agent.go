@@ -1,7 +1,6 @@
 package rvosimulator
 
 import (
-	//	"fmt"
 	"math"
 )
 
@@ -49,7 +48,7 @@ func init() {
 	RVO_EPSILON = 0.00001
 }
 
-func NewAgent() *Agent {
+func NewEmptyAgent() *Agent {
 	a := &Agent{
 		ID:              0,
 		Radius:          float64(0),
@@ -62,7 +61,7 @@ func NewAgent() *Agent {
 	return a
 }
 
-func NewCustomAgent(id int, position *Vector2, radius float64, timeHorizon float64, timeHorizonObst float64, velocity *Vector2, newVelocity *Vector2, prefVelocity *Vector2, maxNeighbors int, neighborDist float64, maxSpeed float64, obstacleNeighbors []*ObstacleNeighbor) *Agent {
+func NewAgent(id int, position *Vector2, radius float64, timeHorizon float64, timeHorizonObst float64, velocity *Vector2, newVelocity *Vector2, prefVelocity *Vector2, maxNeighbors int, neighborDist float64, maxSpeed float64, obstacleNeighbors []*ObstacleNeighbor) *Agent {
 	a := &Agent{
 		ID:                id,
 		Position:          position,

@@ -19,12 +19,10 @@ type RVOSimulator struct {
 	GlobalTime   float64
 }
 
-//FINISH
-// NewRVOSimulator : To create new RVOSimulator object
+// NewRVOSimulator : RVOSimulator with options
 func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, timeHorizon float64, timeHorizonObst float64, radius float64, maxSpeed float64, velocity *Vector2) *RVOSimulator {
 	kdTree := NewKdTree()
-	defaultAgent := NewAgent()
-	//	fmt.Printf("simu %v, %v\n", maxNeighbors, neighborDist)
+	defaultAgent := NewEmptyAgent()
 
 	defaultAgent.MaxNeighbors = maxNeighbors
 	defaultAgent.MaxSpeed = maxSpeed
@@ -47,9 +45,10 @@ func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, t
 	return sim
 }
 
-func NewRVOSimulatorBlank() *RVOSimulator {
+// NewDefaultRVOSimulator : RVOSimulator with default values
+func NewEmptyRVOSimulator() *RVOSimulator {
 	kdTree := NewKdTree()
-	defaultAgent := NewAgent()
+	defaultAgent := NewEmptyAgent()
 
 	sim := &RVOSimulator{
 		TimeStep:     0,
@@ -74,16 +73,15 @@ type AddAgentParam struct {
 	Velocity        *Vector2
 }
 
-// CHECK OK
-// AddAgent :
-func (rvo *RVOSimulator) AddAgentPosition(position *Vector2) (int, bool) {
+// AddDefaultAgent : Add agent with default values
+func (rvo *RVOSimulator) AddDefaultAgent(position *Vector2) (int, bool) {
 
 	if rvo.DefaultAgent == nil {
 		err := true
 		return -1, err
 	}
 
-	agent := NewAgent()
+	agent := NewEmptyAgent()
 	agent.Position = position
 	agent.MaxNeighbors = rvo.DefaultAgent.MaxNeighbors
 	agent.MaxSpeed = rvo.DefaultAgent.MaxSpeed
@@ -96,17 +94,13 @@ func (rvo *RVOSimulator) AddAgentPosition(position *Vector2) (int, bool) {
 
 	rvo.Agents = append(rvo.Agents, agent)
 
-	//	fmt.Printf("FN: AddAgent\n ID %v\n Position: %v\n MaxNeighbors: %v\n MaxSpeed; %v\nNeighborDist: %v\n Radius: %v\n TimeHorizon: %v\n TimeHorizonObst: %v\n Velocity: %v\n\n",
-	//		agent.ID, agent.Position, agent.MaxNeighbors, agent.MaxSpeed, agent.NeighborDist, agent.Radius, agent.TimeHorizon, agent.TimeHorizonObst, agent.Velocity)
-
 	return len(rvo.Agents) - 1, false
 }
 
-// FINISH
-// AddAgent :
+// AddAgent : Add agent with options
 func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNeighbors int, timeHorizon float64, timeHorizonObst float64, radius float64, maxSpeed float64, velocity *Vector2) (int, bool) {
 
-	agent := NewAgent()
+	agent := NewEmptyAgent()
 	agent.Position = position
 	agent.MaxNeighbors = maxNeighbors
 	agent.MaxSpeed = maxSpeed
@@ -122,7 +116,6 @@ func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNe
 	return len(rvo.Agents) - 1, false
 }
 
-// CHECK OK
 // AddObstacle :
 func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
@@ -136,7 +129,7 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
 	// Obstacleを一点ずつ置いて行って形を作る
 	for i := 0; i < len(vertices); i++ {
-		obstacle := NewObstacle()
+		obstacle := NewEmptyObstacle()
 		obstacle.Point = vertices[i]
 
 		// NextとPrevObstacleをセット
@@ -351,7 +344,7 @@ func (rvo *RVOSimulator) QueryVisibility(point1 *Vector2, point2 *Vector2, radiu
 // SetAgentDefaults :
 func (rvo *RVOSimulator) SetAgentDefaults(neighborDist float64, maxNeighbors int, timeHorizon float64, timeHorizonObst float64, radius float64, maxSpeed float64, velocity *Vector2) {
 	if rvo.DefaultAgent == nil {
-		rvo.DefaultAgent = NewAgent()
+		rvo.DefaultAgent = NewEmptyAgent()
 	}
 
 	rvo.DefaultAgent.MaxNeighbors = maxNeighbors

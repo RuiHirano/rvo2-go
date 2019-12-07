@@ -26,7 +26,7 @@ func setupScenario(sim *rvo.RVOSimulator) {
 			X: math.Cos(float64(i) * 2.0 * math.Pi / float64(agentNum)),
 			Y: math.Sin(float64(i) * 2.0 * math.Pi / float64(agentNum)),
 		}
-		_, err := sim.AddAgent1(position)
+		_, err := sim.AddDefaultAgent(position)
 
 		if !err {
 			t := (i + agentNum/2) % agentNum
@@ -67,7 +67,7 @@ func reachedGoal(sim *rvo.RVOSimulator) bool {
 }
 
 func main() {
-	sim := rvo.NewRVOSimulatorBlank()
+	sim := rvo.NewEmptyRVOSimulator()
 
 	setupScenario(sim)
 	for {
