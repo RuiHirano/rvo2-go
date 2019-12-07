@@ -1,7 +1,7 @@
 package vector2_test
 
 import (
-	"testing" // テストで使える関数・構造体が用意されているパッケージをimport
+	"testing"
 
 	rvo "../../src/rvosimulator"
 )

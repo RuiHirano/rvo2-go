@@ -9,12 +9,10 @@ import (
 )
 
 var (
-	goals    []*rvo.Vector2
 	RAND_MAX int
 )
 
 func init() {
-	goals = make([]*rvo.Vector2, 0)
 	RAND_MAX = 32767
 }
 
@@ -26,8 +24,8 @@ func setupScenario(sim *rvo.RVOSimulator) {
 
 	for i := 0; i < 5; i++ {
 		for j := 0; j < 5; j++ {
-			sim.AddDefaultAgent(&rvo.Vector2{X: 55.0 + float64(i)*10.0, Y: 55.0 + float64(j)*10.0})
-			goals = append(goals, &rvo.Vector2{X: 75.0, Y: 75.0})
+			id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 55.0 + float64(i)*10.0, Y: 55.0 + float64(j)*10.0})
+			sim.SetAgentGoal(id, &rvo.Vector2{X: 75.0, Y: 75.0})
 		}
 	}
 
@@ -75,8 +73,7 @@ func updateVisualization(sim *rvo.RVOSimulator) {
 
 func setPreferredVelocities(sim *rvo.RVOSimulator) {
 	for i := 0; i < sim.GetNumAgents(); i++ {
-		// goal - agentPosition
-		goalVector := rvo.Sub(goals[i], sim.GetAgentPosition(i))
+		goalVector := sim.GetAgentGoalVector(i)
 
 		if rvo.Sqr(goalVector) > 1.0 {
 			goalVector = rvo.Normalize(goalVector)
@@ -94,23 +91,13 @@ func setPreferredVelocities(sim *rvo.RVOSimulator) {
 	}
 }
 
-func reachedGoal(sim *rvo.RVOSimulator) bool {
-	/* Check if all agents have reached their goals. */
-	fmt.Printf("goal %v\n", rvo.Sqr(rvo.Sub(sim.GetAgentPosition(0), goals[0])))
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		if rvo.Sqr(rvo.Sub(sim.GetAgentPosition(i), goals[i])) > sim.GetAgentRadius(i)*sim.GetAgentRadius(i) {
-			return false
-		}
-	}
-	return true
-}
-
 func main() {
 	sim := rvo.NewEmptyRVOSimulator()
 	setupScenario(sim)
 
 	for {
-		if reachedGoal(sim) {
+		fmt.Printf("goal %v\n", rvo.Sqr(rvo.Sub(sim.GetAgentPosition(0), sim.GetAgentGoalVector(0))))
+		if sim.IsReachedGoal() {
 			break
 		}
 

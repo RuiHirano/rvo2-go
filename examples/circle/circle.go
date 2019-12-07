@@ -26,11 +26,10 @@ func setupScenario(sim *rvo.RVOSimulator) {
 			X: math.Cos(float64(i) * 2.0 * math.Pi / float64(agentNum)),
 			Y: math.Sin(float64(i) * 2.0 * math.Pi / float64(agentNum)),
 		}
-		_, err := sim.AddDefaultAgent(position)
+		id, err := sim.AddDefaultAgent(position)
 
 		if !err {
-			t := (i + agentNum/2) % agentNum
-			goals[t] = sim.GetAgentPosition(i)
+			sim.SetAgentGoal(id, position)
 		}
 	}
 }
@@ -46,7 +45,7 @@ func updateVisualization(sim *rvo.RVOSimulator) {
 func setPreferredVelocities(sim *rvo.RVOSimulator) {
 	for i := 0; i < sim.GetNumAgents(); i++ {
 		// goal - agentPosition
-		goalVector := rvo.Sub(goals[i], sim.GetAgentPosition(i))
+		goalVector := sim.GetAgentGoalVector(i)
 
 		if rvo.Sqr(goalVector) > 1 {
 			goalVector = rvo.Normalize(goalVector)
@@ -56,22 +55,12 @@ func setPreferredVelocities(sim *rvo.RVOSimulator) {
 	}
 }
 
-func reachedGoal(sim *rvo.RVOSimulator) bool {
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		// ゴールまでの距離の二乗がエージェント半径の距離の二乗よりも大きければまだ到達していない
-		if rvo.Sqr(rvo.Sub(sim.GetAgentPosition(i), goals[i])) > sim.GetAgentRadius(i)*sim.GetAgentRadius(i) {
-			return false
-		}
-	}
-	return true
-}
-
 func main() {
 	sim := rvo.NewEmptyRVOSimulator()
 
 	setupScenario(sim)
 	for {
-		if reachedGoal(sim) {
+		if sim.IsReachedGoal() {
 			fmt.Printf("Goal \n ")
 			break
 		}

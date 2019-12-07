@@ -160,10 +160,12 @@ func setupScenario(sim *rvo.RVOSimulator, scaledAgents []Agent) {
 
 	for _, agent := range scaledAgents {
 		position := &rvo.Vector2{X: float64(agent.Coord.Lat), Y: float64(agent.Coord.Lon)}
+		goal := &rvo.Vector2{X: float64(agent.Goal.Lat), Y: float64(agent.Goal.Lon)}
 		velocity := &rvo.Vector2{X: float64(agent.Velocity.Lat), Y: float64(agent.Velocity.Lon)}
 		id, _ := sim.AddDefaultAgent(position)
 		sim.SetAgentPrefVelocity(id, velocity)
 		sim.SetAgentMaxSpeed(id, rvo.Abs(velocity))
+		sim.SetAgentGoal(id, goal)
 	}
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
@@ -173,13 +175,14 @@ func setupScenario(sim *rvo.RVOSimulator, scaledAgents []Agent) {
 func setPreferredVelocities(sim *rvo.RVOSimulator, scaledAgents []Agent) []Agent {
 
 	nextScaledAgents := make([]Agent, 0)
-	for i, agent := range scaledAgents {
+	for i, _ := range scaledAgents {
 		// setPrefVelocity
-		goal := &rvo.Vector2{
+		/*goal := &rvo.Vector2{
 			X: float64(agent.Goal.Lat),
 			Y: float64(agent.Goal.Lon),
 		}
-		goalVector := rvo.Sub(goal, sim.GetAgentPosition(i))
+		goalVector := rvo.Sub(goal, sim.GetAgentPosition(i))*/
+		goalVector := sim.GetAgentGoalVector(i)
 
 		if rvo.Sqr(goalVector) > 1 {
 			goalVector = rvo.Normalize(goalVector)
@@ -224,14 +227,18 @@ func main() {
 	agents := readAgentData()
 
 	scaledAgents := scale(agents, mapData)
-	fmt.Printf("scaledagents is : %v\n", scaledAgents)
+	fmt.Printf("ScaledAgents is : %v\n", scaledAgents)
 	invScaledAgents := invScale(scaledAgents, mapData)
-	fmt.Printf("invAgents is : %v\n", invScaledAgents)
+	fmt.Printf("InvScaledAgents is : %v\n", invScaledAgents)
 
 	setupScenario(sim, scaledAgents)
 
 	nextScaledAgents := scaledAgents
-	for step := 0; step < 30; step++ {
+	for step := 0; ; step++ {
+		if sim.IsReachedGoal() {
+			fmt.Printf("Goal\n")
+			break
+		}
 		sim.DoStep()
 
 		nextScaledAgents = setPreferredVelocities(sim, nextScaledAgents)

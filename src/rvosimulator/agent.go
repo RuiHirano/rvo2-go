@@ -23,6 +23,7 @@ type Agent struct {
 	ObstacleNeighbors []*ObstacleNeighbor
 	AgentNeighbors    []*AgentNeighbor
 	OrcaLines         []*Line
+	Goal              *Vector2
 }
 
 // ObstacleNeighbor :

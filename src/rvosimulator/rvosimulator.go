@@ -193,6 +193,36 @@ func (rvo *RVOSimulator) DoStep() {
 	rvo.GlobalTime += rvo.TimeStep
 }
 
+// IsReachedGoal :
+func (rvo *RVOSimulator) IsReachedGoal() bool {
+	/* Check if all agents have reached their goals. */
+	for i := 0; i < rvo.GetNumAgents(); i++ {
+		if !rvo.IsAgentReachedGoal(i) {
+			return false
+		}
+	}
+	return true
+}
+
+// IsAgentReachedGoal :
+func (rvo *RVOSimulator) IsAgentReachedGoal(agentNo int) bool {
+	/* Check if agent have reached their goals. */
+	if Sqr(Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo))) > rvo.GetAgentRadius(agentNo)*rvo.GetAgentRadius(agentNo) {
+		return false
+	}
+	return true
+}
+
+// GetAgentGoalVector :
+func (rvo *RVOSimulator) GetAgentGoalVector(agentNo int) *Vector2 {
+	return Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo))
+}
+
+// GetAgent:
+func (rvo *RVOSimulator) GetAgent(agentNo int) *Agent {
+	return rvo.Agents[agentNo]
+}
+
 // GetAgentAgentNeighbor :
 func (rvo *RVOSimulator) GetAgentAgentNeighbor(agentNo int, neighborNo int) int {
 	return rvo.Agents[agentNo].AgentNeighbors[neighborNo].Agent.ID
@@ -251,6 +281,12 @@ func (rvo *RVOSimulator) GetAgentORCALine(agentNo int, lineNo int) *Line {
 func (rvo *RVOSimulator) GetAgentPosition(agentNo int) *Vector2 {
 	agent := rvo.Agents[agentNo]
 	return agent.Position
+}
+
+// GetAgentGoal :
+func (rvo *RVOSimulator) GetAgentGoal(agentNo int) *Vector2 {
+	agent := rvo.Agents[agentNo]
+	return agent.Goal
 }
 
 // GetAgentPrefVelocity :
@@ -367,11 +403,14 @@ func (rvo *RVOSimulator) SetAgentPosition(agentNo int, position *Vector2) {
 	rvo.Agents[agentNo].Position = position
 }
 
-// CHECK OK
+// SetAgentGoal :
+func (rvo *RVOSimulator) SetAgentGoal(agentNo int, goal *Vector2) {
+	rvo.Agents[agentNo].Goal = goal
+}
+
 // SetAgentPrefVelocity :
 func (rvo *RVOSimulator) SetAgentPrefVelocity(agentNo int, prefVelocity *Vector2) {
 	rvo.Agents[agentNo].PrefVelocity = prefVelocity
-
 }
 
 // SetAgentRadius :
