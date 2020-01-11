@@ -1,8 +1,7 @@
 # Optimal Reciprocal Collision Avoidance for Golang
 
-New updates are released
-there. There are no explicit version numbers -- all commits on the master
-branch are supposed to be stable.
+New updates are released there. 
+There are no explicit version numbers -- all commits on the master branch are supposed to be stable.
 
 ## Building & installing
 
@@ -80,29 +79,90 @@ func main() {
 
 ```
 
+## Parameter
+
+### Global Parameter
+|Paramater  |Type  |Description  |
+|---|---|---|
+|GlobalTime  |float64  | The Global Time of the simulation. Must be positive.|
+|TimeStep  |float64  |The time step of the simulation. Must be positive. |
+
+### Agent Parameter
+|Paramater  |Type  |Description  |
+|---|---|---|
+|MaxNeighbors  |int  | The maximal number of other agents the agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe.|
+|MaxSpeed  |float64  |The maximum speed of the agent. Must be non-negative.|
+|NeighborDist  |float64  |The maximal distance (center point to center point) to other agents the agent takes into account in the navigation. The larger this number, the longer the running time of the simulation. If the number is too low, the simulation will not be safe. Must be non-negative.|
+|Position  |*RVOSimulator.Vector2  |The current position of the agent.|
+|PrefVelocity  |float64  |The current preferred velocity of the agent. This is the velocity the agent would take if no other agents or obstacles were around. The simulator computes an actual velocity for the agent that follows the preferred velocity as closely as possible, but at the same time guarantees collision avoidance.|
+|Radius  |float64  |The radius of the agent. Must be non-negative. |
+|TimeHorizon |float64  |The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to other agents. The larger this number, the sooner this agent will respond to the presence of other agents, but the less freedom the agent has in choosing its velocities. Must be positive. |
+|TimeHorizonObst  |float64  |The minimal amount of time for which the agent's velocities that are computed by the simulation are safe with respect to obstacles. The larger this number, the sooner this agent will respond to the presence of obstacles, but the less freedom the agent has in choosing its velocities. Must be positive.|
+|Velocity  |*RVOSimulator.Vector2  |The (current) velocity of the agent.|
+|Goal  |*RVOSimulator.Vector2  |The Goal of the agent.|
+
+## RVOSimulator Functions
+
+### Simulator Functions
+|Function Name  |Params | Return Type  |Description  |
+|---|---|---|---|
+|NewEmptyRVOSimulator  |None  |*RVOSimulator | |
+|NewRVOSimulator  |()  |*RVOSimulator | |
+|DoStep  |None  |None | |
+|SetTimeStep  |(timeStep float64 )  |None  | |
+|GetGlobalTime  |None  |float64  | |
+|GetTimeStep  |None  |float64  | |
+
+### Agent Functions
+|Function Name  |Params | Return Type  |Description  |
+|---|---|---|---|
+|AddDefaultAgent  |(position *RVOSimulator.Vector2)  |(id int, err bool) | |
+|AddAgent  |float64  |(id int, err bool) | |
+|IsReachedGoal  |None  |bool | |
+|IsAgentReachedGoal  |(agentID int)  |bool  | |
+|GetAgent  |(agentID int)  |*RVOSimulator.Agent  | |
+|GetAgentPosition  |(agentID int)  |*RVOSimulator.Vector2  | |
+|GetAgentPrefVelocity  |(agentID int)  |*RVOSimulator.Vector2  | |
+|GetAgentRadius  |(agentID int)  |float64  | |
+|GetAgentVelocity  |(agentID int)  |*RVOSimulator.Vector2  | |
+|GetAgentNumAgents  |None  |int  | |
+|GetAgentAgentNeighbor  |(agentID int, neighborID int)  |int  | |
+|GetAgentMaxNeighbors  |(agentID int)  |int  | |
+|GetAgentMaxSpeed  |(agentID int)  |float64  | |
+|GetAgentNeighborDist  |(agentID int)  |float64  | |
+|GetAgentNumAgentNeighbors  |(agentID int)  |int  | |
+|GetAgentNumObstacleNeighbor  |(agentID int)  |int  | |
+|GetAgentNumORCALines  |(agentID int)  |int  | |
+|GetAgentTimeHorizon  |(agentID int)  |float64  | |
+|GetAgentTimeHorizonObst  |(agentID int)  |float64  | |
+|GetAgentORCALine  |(agentID int, lineNo int)  |*RVOSimulator.Line  | |
+|GetAgentGoalVector  |(agentID int)  |*RVOSimulator.Vector2  | |
+|SetAgentDefaults  |(neighborDist float64, maxNeighbors int, timeHorizon float64, timeHorizonObst float64, radius float64, maxSpeed float64, velocity *RVOSimulator.Vector2 )  |None  | |
+|SetAgentMaxNeighbors  |(agentID int, maxNeighbors int )  |None  | |
+|SetAgentMaxSpeed  |(agentID int, maxSpeed float64 )  |None  | |
+|SetAgentNeighborDist  |(agentID int, neighborDist float64 )  |None  | |
+|SetAgentPosition  |(agentID int, position *RVOSimulator.Vector2 )  |None  | |
+|SetAgentGoal  |(agentID int, goal *RVOSimulator.Vector2 )  |None  | |
+|SetAgentPrefVelocity  |(agentID int, velocity *RVOSimulator.Vector2 )  |None  | |
+|SetAgentVelocity  |(agentID int, velocity *RVOSimulator.Vector2 )  |None  | |
+|SetAgentRadius  |(agentID int, radius float64 )  |None  | |
+|SetAgentTimeHorizon  |(agentID int, timeHorizon float64 )  |None  | |
+|SetAgentTimeHorizonObst  |(agentID int, timeHorizonObst float64 )  |None  | |
+
+### Obstacle Functions
+|Function Name  |Params | Return Type  |Description  |
+|---|---|---|---|
+|AddObstacle  |(vertices []*RVOSimulator.Vector2)  |(id int, err bool) | |
+|ProcessObstacle  |None  |None | |
+
 # Optimal Reciprocal Collision Avoidance
 
 <http://gamma.cs.unc.edu/RVO2/>
 
-[![Build Status](https://travis-ci.org/snape/RVO2.svg?branch=master)](https://travis-ci.org/snape/RVO2)
-[![Build status](https://ci.appveyor.com/api/projects/status/0nyp7y4di8x1gh9o/branch/master?svg=true)](https://ci.appveyor.com/project/snape/rvo2)
+this library (rvo2-go) is based on rvo2-library (https://github.com/snape/RVO2).
 
-Copyright 2008 University of North Carolina at Chapel Hill
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-<http://www.apache.org/licenses/LICENSE-2.0>
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-Please send all bug reports for the Python wrapper to
-[Python-RVO2](https://github.com/sybrenstuvel/Python-RVO2), and bug
+Please send all bug reports about rvo2-go to issues of
+[rvo2-go](https://github.com/RuiHirano/rvo2-go), and bug
 report for the RVO2 library itself to [geom@cs.unc.edu](mailto:geom@cs.unc.edu).
 
 The RVO2 authors may be contacted via:
