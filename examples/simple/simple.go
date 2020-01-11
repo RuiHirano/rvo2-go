@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	rvo "../../src/rvosimulator"
+	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
+	monitor "github.com/RuiHirano/rvo2-go/examples/monitor"
 )
 
 func setupScenario(sim *rvo.RVOSimulator) {
@@ -27,7 +28,8 @@ func setupScenario(sim *rvo.RVOSimulator) {
 }
 
 func main() {
-	sim := rvo.NewRVOSimulator(float64(1)/60, 1.5, 5, 1.5, 2, 0.4, 2, &rvo.Vector2{X: 0, Y: 0})
+	monitor.Test()
+	/*sim := rvo.NewRVOSimulator(float64(1)/60, 1.5, 5, 1.5, 2, 0.4, 2, &rvo.Vector2{X: 0, Y: 0})
 	setupScenario(sim)
 
 	for step := 0; step < 20; step++ {
@@ -39,5 +41,8 @@ func main() {
 			agentPositions = agentPositions + " (" + strconv.FormatFloat(sim.GetAgentPosition(j).X, 'f', 3, 64) + "," + strconv.FormatFloat(sim.GetAgentPosition(j).Y, 'f', 4, 64) + ") "
 		}
 		fmt.Printf("step=%v  t=%v  %v \n", step, strconv.FormatFloat(sim.GlobalTime, 'f', 3, 64), agentPositions)
-	}
+
+		// if you want to watch monitor
+		isWatch := true
+	}*/
 }
