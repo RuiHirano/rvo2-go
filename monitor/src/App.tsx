@@ -28,6 +28,22 @@ const calcDataSize = (rvoData: any) => {
                 xmax = agent.x;
             }
         });
+        stepData.obstacles.forEach((obstacle: any) => {
+            obstacle.positions.forEach((position: any) => {
+                if (position.y < ymin) {
+                    ymin = position.y;
+                }
+                if (position.x < xmin) {
+                    xmin = position.x;
+                }
+                if (position.y > ymax) {
+                    ymax = position.y;
+                }
+                if (position.x > xmax) {
+                    xmax = position.x;
+                }
+            });
+        });
     });
 
     const size: DataSize = {
@@ -42,7 +58,6 @@ const calcDataSize = (rvoData: any) => {
 };
 
 const createScatterData = (stepData: any) => {
-    console.log("stepData: %v\n", stepData);
     var datasets: any = [];
 
     // Set Agents Dataset
@@ -66,30 +81,7 @@ const createScatterData = (stepData: any) => {
         data: agentCoords
     });
 
-    // Set Obstacles Dataset
-    stepData.Obstacles = [
-        {
-            id: 1,
-            positions: [
-                { x: 1, y: 1 },
-                { x: 1, y: 2 },
-                { x: 2, y: 2 },
-                { x: 2, y: 1 },
-                { x: 1, y: 1 }
-            ]
-        },
-        {
-            id: 2,
-            positions: [
-                { x: 0, y: 0 },
-                { x: 0, y: 3 },
-                { x: 3, y: 3 },
-                { x: 3, y: 0 },
-                { x: 0, y: 0 }
-            ]
-        }
-    ];
-    stepData.Obstacles.forEach((obstacle: any) => {
+    stepData.obstacles.forEach((obstacle: any) => {
         var obstacleCoords: any = [];
         obstacle.positions.forEach((position: any) => {
             obstacleCoords.push({ x: position.x, y: position.y });
@@ -138,11 +130,9 @@ const App: React.FC = () => {
         yMax: 10,
         yMin: 0
     });
-    console.log("test3");
 
     socket.on("connect", () => {
         console.log("Socket.IO connected!");
-        socket.emit("some:event", "test");
     });
     socket.on("rvo", (strData: string[]) => {
         var rvoData: any = [];
@@ -162,19 +152,8 @@ const App: React.FC = () => {
         console.log("Socket.IO disconnected!");
     });
 
-    console.log(
-        "size2: ",
-        parseInt(
-            (
-                (200 * (dataSize.yMax - dataSize.yMin)) /
-                (dataSize.xMax - dataSize.xMin)
-            ).toString()
-        )
-    );
-
     const height = dataSize.yMax - dataSize.yMin;
     const width = dataSize.xMax - dataSize.xMin;
-    console.log("hw: ", height, width);
 
     return (
         <div className="App">
@@ -199,8 +178,8 @@ const App: React.FC = () => {
                                     {
                                         ticks: {
                                             beginAtZero: true,
-                                            min: dataSize.yMin,
-                                            max: dataSize.yMax
+                                            min: dataSize.yMin - height / 6,
+                                            max: dataSize.yMax + height / 6
                                         }
                                     }
                                 ],
@@ -208,8 +187,8 @@ const App: React.FC = () => {
                                     {
                                         ticks: {
                                             beginAtZero: true,
-                                            min: dataSize.xMin,
-                                            max: dataSize.xMax
+                                            min: dataSize.xMin - width / 6,
+                                            max: dataSize.xMax + width / 6
                                         }
                                     }
                                 ]

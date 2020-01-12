@@ -19,26 +19,24 @@ func setupScenario(sim *rvo.RVOSimulator) {
 	}
 
 	for i := 0; i < agentNum; i++ {
-		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 0 + rand.Float64(), Y: 1 + rand.Float64()})
-		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 1 + rand.Float64(), Y: 3 + rand.Float64()})
+		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 0 + rand.Float64(), Y: -1 + rand.Float64()})
+		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: -1 + rand.Float64(), Y: -3 + rand.Float64()})
 	}
 
 	obstacle1 := []*rvo.Vector2{
-		&rvo.Vector2{X: 0.1, Y: 0.1},
-		&rvo.Vector2{X: -0.1, Y: 0.1},
-		&rvo.Vector2{X: -0.1, Y: -0.1},
+		&rvo.Vector2{X: 1, Y: 1},
+		&rvo.Vector2{X: -1, Y: 1},
+		&rvo.Vector2{X: -1, Y: -1},
 	}
 	sim.AddObstacle(obstacle1)
-	/*obstacle2 := []*rvo.Vector2{
-		&rvo.Vector2{X: 0.2, Y: 0.2},
-		&rvo.Vector2{X: -0.2, Y: 0.2},
-		&rvo.Vector2{X: -0.2, Y: -0.2},
-		&rvo.Vector2{X: 0.2, Y: -0.2},
+	obstacle2 := []*rvo.Vector2{
+		&rvo.Vector2{X: 2, Y: 2},
+		&rvo.Vector2{X: -2, Y: 2},
+		&rvo.Vector2{X: -2, Y: -2},
+		&rvo.Vector2{X: 2, Y: -2},
 	}
-	sim.AddObstacle(obstacle2)*/
-	fmt.Printf("obsnum1: %v\n", len(sim.Obstacles))
+	sim.AddObstacle(obstacle2)
 	sim.ProcessObstacles()
-	fmt.Printf("obsnum2: %v\n", len(sim.Obstacles))
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
 	fmt.Printf("Running Simulation...\n\n")
@@ -50,7 +48,7 @@ func main() {
 	// monitor 
 	mo := monitor.NewMonitor()
 
-	for step := 0; step < 1; step++ {
+	for step := 0; step < 100; step++ {
 		sim.DoStep()
 
 		var agentPositions string

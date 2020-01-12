@@ -1,8 +1,5 @@
 package rvosimulator
 
-import (
-	"log"
-)
 
 var (
 	Sim *RVOSimulator
@@ -15,7 +12,8 @@ func init() {
 type RVOSimulator struct {
 	TimeStep     float64
 	Agents       []*Agent
-	Obstacles    []*Obstacle
+	Obstacles    [][]*Vector2
+	ObstacleVertices    []*Obstacle
 	KdTree       *KdTree
 	DefaultAgent *Agent
 	GlobalTime   float64
@@ -37,7 +35,8 @@ func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, t
 	sim := &RVOSimulator{
 		TimeStep:     timeStep,
 		Agents:       make([]*Agent, 0),
-		Obstacles:    make([]*Obstacle, 0),
+		Obstacles:    make([][]*Vector2, 0),
+		ObstacleVertices:    make([]*Obstacle, 0),
 		KdTree:       kdTree,
 		DefaultAgent: defaultAgent,
 		GlobalTime:   0.0,
@@ -55,7 +54,8 @@ func NewEmptyRVOSimulator() *RVOSimulator {
 	sim := &RVOSimulator{
 		TimeStep:     0,
 		Agents:       make([]*Agent, 0),
-		Obstacles:    make([]*Obstacle, 0),
+		Obstacles:    make([][]*Vector2, 0),
+		ObstacleVertices:    make([]*Obstacle, 0),
 		KdTree:       kdTree,
 		DefaultAgent: defaultAgent,
 		GlobalTime:   0.0,
@@ -121,13 +121,17 @@ func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNe
 // AddObstacle : Add Obstacle with vertices
 func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
+	// add obstacle
+	rvo.Obstacles = append(rvo.Obstacles, vertices)
+
+	// add obstacle vertices
 	if len(vertices) < 2 {
 		err := true
 		return -1, err
 	}
 
 	// 一つ一つ大きなObstacleはObstacleNoとして管理
-	obstacleNo := len(rvo.Obstacles)
+	obstacleNo := len(rvo.ObstacleVertices)
 
 	// Obstacleを一点ずつ置いて行って形を作る
 	for i := 0; i < len(vertices); i++ {
@@ -136,12 +140,12 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 
 		// NextとPrevObstacleをセット
 		if i != 0 {
-			obstacle.PrevObstacle = rvo.Obstacles[len(rvo.Obstacles)-1]
+			obstacle.PrevObstacle = rvo.ObstacleVertices[len(rvo.ObstacleVertices)-1]
 			obstacle.PrevObstacle.NextObstacle = obstacle
 		}
 
 		if i == len(vertices)-1 {
-			obstacle.NextObstacle = rvo.Obstacles[obstacleNo]
+			obstacle.NextObstacle = rvo.ObstacleVertices[obstacleNo]
 			obstacle.NextObstacle.PrevObstacle = obstacle
 		}
 		
@@ -169,14 +173,9 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 			obstacle.IsConvex = (LeftOf(vertices[ki], vertices[i], vertices[ti]) >= 0.0)
 		}
 
-		obstacle.ID = len(rvo.Obstacles)
+		obstacle.ID = len(rvo.ObstacleVertices)
 
-		log.Printf("obs: %v\n", obstacle)
-		log.Printf("prevobs: %v\n", obstacle.PrevObstacle)
-		log.Printf("nextobs: %v\n", obstacle.NextObstacle)
-		log.Printf("----------\n")
-
-		rvo.Obstacles = append(rvo.Obstacles, obstacle)
+		rvo.ObstacleVertices = append(rvo.ObstacleVertices, obstacle)
 
 	}
 
@@ -226,6 +225,11 @@ func (rvo *RVOSimulator) IsAgentReachedGoal(agentNo int) bool {
 // GetAgentGoalVector :
 func (rvo *RVOSimulator) GetAgentGoalVector(agentNo int) *Vector2 {
 	return Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo))
+}
+
+// GetAgents:
+func (rvo *RVOSimulator) GetAgents() []*Agent {
+	return rvo.Agents
 }
 
 // GetAgent:
@@ -341,24 +345,39 @@ func (rvo *RVOSimulator) GetNumAgents() int {
 
 // GetNumObstacleVertices :
 func (rvo *RVOSimulator) GetNumObstacleVertices() int {
-	return len(rvo.Obstacles)
+	return len(rvo.ObstacleVertices)
 }
 
 // GetObstacleVertex :
 func (rvo *RVOSimulator) GetObstacleVertex(vertexNo int) *Vector2 {
-	obstacle := rvo.Obstacles[vertexNo]
+	obstacle := rvo.ObstacleVertices[vertexNo]
 	return obstacle.Point
+}
+
+// GetObstacles :
+func (rvo *RVOSimulator) GetObstacles() [][]*Vector2 {
+	return rvo.Obstacles
+}
+
+// GetNumObstacles :
+func (rvo *RVOSimulator) GetNumObstacles() int {
+	return len(rvo.Obstacles)
+}
+
+// GetObstacle:
+func (rvo *RVOSimulator) GetObstacle(obstacleNo int) []*Vector2 {
+	return rvo.Obstacles[obstacleNo]
 }
 
 // GetNextObstacleVertexNo :
 func (rvo *RVOSimulator) GetNextObstacleVertexNo(vertexNo int) int {
-	obstacle := rvo.Obstacles[vertexNo]
+	obstacle := rvo.ObstacleVertices[vertexNo]
 	return obstacle.NextObstacle.ID
 }
 
 // GetPrevObstacleVertexNo :
 func (rvo *RVOSimulator) GetPrevObstacleVertexNo(vertexNo int) int {
-	obstacle := rvo.Obstacles[vertexNo]
+	obstacle := rvo.ObstacleVertices[vertexNo]
 	return obstacle.PrevObstacle.ID
 }
 

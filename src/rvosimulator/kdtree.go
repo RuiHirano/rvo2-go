@@ -2,7 +2,6 @@ package rvosimulator
 
 import (
 	"math"
-	"log"
 )
 
 var (
@@ -18,7 +17,6 @@ type KdTree struct {
 	ObstacleTree *ObstacleTreeNode
 	AgentTree    []*AgentTreeNode
 	Agents       []*Agent
-	Obstacles    []*Obstacle
 }
 
 // AgentTreeNode :
@@ -196,10 +194,9 @@ func (kt *KdTree) BuildObstacleTree() {
 
 	kt.DeleteObstacleTree(kt.ObstacleTree)
 
-	obstacles := make([]*Obstacle, len(Sim.Obstacles))
-	log.Printf("obsnum: %v\n", len(Sim.Obstacles))
-	for i := 0; i < len(Sim.Obstacles); i++ {
-		obstacles[i] = Sim.Obstacles[i]
+	obstacles := make([]*Obstacle, len(Sim.ObstacleVertices))
+	for i := 0; i < len(Sim.ObstacleVertices); i++ {
+		obstacles[i] = Sim.ObstacleVertices[i]
 	}
 
 	kt.ObstacleTree = kt.BuildObstacleTreeRecursive(obstacles)
@@ -304,9 +301,9 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 				newObstacle.NextObstacle = obstacleJ2
 				newObstacle.IsConvex = true
 				newObstacle.UnitDir = obstacleJ1.UnitDir
-				newObstacle.ID = len(Sim.Obstacles)
+				newObstacle.ID = len(Sim.ObstacleVertices)
 
-				Sim.Obstacles = append(Sim.Obstacles, newObstacle)
+				Sim.ObstacleVertices = append(Sim.ObstacleVertices, newObstacle)
 
 				obstacleJ1.NextObstacle = newObstacle
 				obstacleJ2.PrevObstacle = newObstacle

@@ -22,7 +22,7 @@ var (
 
 type StepData struct {
 	Agents []*rvo.Agent
-	Obstacles []*rvo.Obstacle
+	Obstacles [][]*rvo.Vector2
 } 
 
 type Monitor struct {
@@ -63,7 +63,6 @@ func assetsFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *StepData) GetJson() string {
-	//log.Printf("data %v\n", d)
 	jsonAgents := "["
 	for i, agent := range d.Agents{
 		jsonAgent := ""
@@ -76,29 +75,43 @@ func (d *StepData) GetJson() string {
 			agent.ID, agent.Position.Y, agent.Position.X)
 		}
 		jsonAgents = jsonAgents + jsonAgent
-		//log.Printf("jsonAgent %v\n", jsonAgent)
 	} 
 	jsonAgents = jsonAgents + "]"
 
 	
 
 	jsonObstacles := "["
-	log.Printf("obs: %v\n", d.Obstacles)
-	for _, obstacle := range d.Obstacles{
-		log.Printf("obsta: %v %v\n", obstacle.ID, obstacle.Point, obstacle.NextObstacle)
-	}
-	/*for i, jsonObstacle := range d.jsonObstacles{
-		jsonObstacle = ""
-		if i == len(d.jsonObstacles)-1 {
+	for i, obstacle := range d.Obstacles{
+		// positions
+		jsonPositions := "["
+		for j, position := range obstacle{
+			jsonPosition := ""
+			if j == len(obstacle)-1 {
+				// last
+				// 図形を閉じるため最後に一つ追加する
+				jsonPosition = fmt.Sprintf(`{"x":%f, "y":%f},{"x":%f, "y":%f}`,
+				position.X, position.Y, obstacle[0].X, obstacle[0].Y)
+
+			}else{
+				jsonPosition = fmt.Sprintf(`{"x":%f, "y":%f},`,
+				position.X, position.Y)
+			}
+			jsonPositions = jsonPositions + jsonPosition
+		}
+		jsonPositions = jsonPositions + "]"
+
+		// obstacles
+		jsonObstacle := ""
+		if i == len(d.Obstacles)-1 {
 			// last
-			jsonObstacle := fmt.Sprintf(`{"id":%d,"lat":%d, "lon":%d}`,
-			d.Obstacles[i].ID, d.Obstacles[i].Position.Latitude, d.Obstacles[i].Position.Longitude)
+			jsonObstacle = fmt.Sprintf(`{"id":%d, "positions":%s}`,
+			i, jsonPositions)
 		}else{
-			jsonObstacle := fmt.Sprintf(`{"id":%d,"lat":%d, "lon":%d},`,
-			d.Obstacles[i].ID, d.Obstacles[i].Position.Latitude, d.Obstacles[i].Position.Longitude)
+			jsonObstacle = fmt.Sprintf(`{"id":%d, "positions":%s},`,
+			i, jsonPositions)
 		}
 		jsonObstacles = jsonObstacles + jsonObstacle
-	} */
+	} 
 	jsonObstacles = jsonObstacles + "]"
 
 	s := fmt.Sprintf(`{"agents":%s,"obstacles":%s}`,
@@ -152,41 +165,22 @@ func (m *Monitor)RunServer() error {
 func (m *Monitor)AddData(sim *rvo.RVOSimulator){
 	// to show in monitor
 	agents := make([]*rvo.Agent, 0)
+	// to change pointa of each agent
 	for i := 0; i < sim.GetNumAgents(); i++ {
-		//fmt.Printf("agent: %v %v\n",  sim.GetAgent(i))
 		agent := *sim.GetAgent(i)
 		agents = append(agents, &agent)
 	}
-	m.Data = append(m.Data, &StepData{
-		Agents: agents,
-		Obstacles: sim.Obstacles,
-	})
-}
-
-func (m *Monitor)AddAgents(sim *rvo.RVOSimulator){
-	// to show in monitor
-	agents := make([]*rvo.Agent, 0)
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		//fmt.Printf("agent: %v %v\n",  sim.GetAgent(i))
-		agent := *sim.GetAgent(i)
-		agents = append(agents, &agent)
+	obstacles := make([][]*rvo.Vector2, 0)
+	for i := 0; i < sim.GetNumObstacles(); i++ {
+		obstacle := sim.GetObstacle(i)
+		obst := make([]*rvo.Vector2, 0)
+		for _, obs := range obstacle{
+			obst = append(obst, &(*obs))
+		}
+		obstacles = append(obstacles, obst)
 	}
 	m.Data = append(m.Data, &StepData{
 		Agents: agents,
-		Obstacles: sim.Obstacles,
-	})
-}
-
-func (m *Monitor)AddObstacles(sim *rvo.RVOSimulator){
-	// to show in monitor
-	agents := make([]*rvo.Agent, 0)
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		//fmt.Printf("agent: %v %v\n",  sim.GetAgent(i))
-		agent := *sim.GetAgent(i)
-		agents = append(agents, &agent)
-	}
-	m.Data = append(m.Data, &StepData{
-		Agents: agents,
-		Obstacles: sim.Obstacles,
+		Obstacles: obstacles,
 	})
 }
