@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Scatter } from "react-chartjs-2";
 import io from "socket.io-client";
 import Slider from "@material-ui/core/Slider";
+import { Typography } from "@material-ui/core";
 
 const rvodata = {};
 
@@ -124,6 +125,7 @@ const App: React.FC = () => {
     const [data, setData] = useState([]);
     // each step rvo data
     const [stepData, setStepData] = useState({});
+    const [param, setParam] = useState<any>({});
     const [dataSize, setDataSize] = useState<DataSize>({
         xMax: 10,
         xMin: 0,
@@ -148,6 +150,12 @@ const App: React.FC = () => {
         setDataSize(size);
     });
 
+    socket.on("param", (param: string) => {
+        console.log("param: ", param);
+        const rvoParam = JSON.parse(param);
+        setParam(rvoParam);
+    });
+
     socket.on("disconnect", () => {
         console.log("Socket.IO disconnected!");
     });
@@ -161,40 +169,42 @@ const App: React.FC = () => {
             {Object.keys(stepData).length === 0 ? (
                 <h2>Loading...</h2>
             ) : (
-                <div
-                    style={{
-                        width: 600,
-                        height: (600 * height) / width
-                    }}
-                >
-                    <Scatter
-                        data={createScatterData(stepData)}
-                        width={1}
-                        height={1}
-                        options={{
-                            maintainAspectRatio: false,
-                            scales: {
-                                yAxes: [
-                                    {
-                                        ticks: {
-                                            beginAtZero: true,
-                                            min: dataSize.yMin - height / 6,
-                                            max: dataSize.yMax + height / 6
-                                        }
-                                    }
-                                ],
-                                xAxes: [
-                                    {
-                                        ticks: {
-                                            beginAtZero: true,
-                                            min: dataSize.xMin - width / 6,
-                                            max: dataSize.xMax + width / 6
-                                        }
-                                    }
-                                ]
-                            }
+                <div>
+                    <div
+                        style={{
+                            width: 600,
+                            height: (600 * height) / width
                         }}
-                    />
+                    >
+                        <Scatter
+                            data={createScatterData(stepData)}
+                            width={1}
+                            height={1}
+                            options={{
+                                maintainAspectRatio: false,
+                                scales: {
+                                    yAxes: [
+                                        {
+                                            ticks: {
+                                                beginAtZero: true,
+                                                min: dataSize.yMin - height / 6,
+                                                max: dataSize.yMax + height / 6
+                                            }
+                                        }
+                                    ],
+                                    xAxes: [
+                                        {
+                                            ticks: {
+                                                beginAtZero: true,
+                                                min: dataSize.xMin - width / 6,
+                                                max: dataSize.xMax + width / 6
+                                            }
+                                        }
+                                    ]
+                                }
+                            }}
+                        />
+                    </div>
                     <Slider
                         defaultValue={0}
                         aria-labelledby="discrete-slider"
@@ -211,6 +221,27 @@ const App: React.FC = () => {
                         min={0}
                         max={data.length}
                     />
+                    <Typography variant={"body1"}>
+                        {"TimeStep: " + param.timeStep}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"NeighborDist: " + param.neighborDist}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"MaxNeighbors: " + param.maxNeighbors}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"TimeHorizon: " + param.timeHorizon}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"TimeHorizonObst: " + param.timeHorizonObst}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"Radius: " + param.radius}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"MaxSpeed: " + param.maxSpeed}
+                    </Typography>
                 </div>
             )}
         </div>

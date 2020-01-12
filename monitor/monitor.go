@@ -7,15 +7,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	//"encoding/json"
 	gosocketio "github.com/mtfelian/golang-socketio"
-	//"github.com/googollee/go-socket.io"
 	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
 )
 
 var (
-	port = 7000
-	//ioserv     *gosocketio.Server
 	assetsDir  http.FileSystem
 	mu sync.Mutex
 )
@@ -25,13 +21,34 @@ type StepData struct {
 	Obstacles [][]*rvo.Vector2
 } 
 
+type RVOParam struct {
+	TimeStep float64
+	NeighborDist float64
+	MaxNeighbors int
+	TimeHorizon float64
+	TimeHorizonObst float64
+	Radius float64
+	MaxSpeed float64
+} 
+
 type Monitor struct {
 	Data []*StepData
+	RVOParam *RVOParam
 }
 
-func NewMonitor() *Monitor{
+func NewMonitor(sim *rvo.RVOSimulator) *Monitor{
+	param := &RVOParam{
+		TimeStep: sim.TimeStep,
+		NeighborDist: sim.DefaultAgent.NeighborDist,
+		MaxNeighbors: sim.DefaultAgent.MaxNeighbors,
+		TimeHorizon: sim.DefaultAgent.TimeHorizon,
+		TimeHorizonObst: sim.DefaultAgent.TimeHorizonObst,
+		Radius: sim.DefaultAgent.Radius,
+		MaxSpeed: sim.DefaultAgent.MaxSpeed,
+	}
 	m := &Monitor{
 		Data: make([]*StepData, 0),
+		RVOParam: param,
 	}
 	return m
 }
@@ -119,6 +136,12 @@ func (d *StepData) GetJson() string {
 	return s
 }
 
+func (p *RVOParam) GetJson() string {
+	s := fmt.Sprintf(`{"timeStep":%f,"neighborDist":%f,"maxNeighbors":%d,"timeHorizon":%f,"timeHorizonObst":%f,"radius":%f,"maxSpeed":%f}`,
+		p.TimeStep, p.NeighborDist, p.MaxNeighbors, p.TimeHorizon, p.TimeHorizonObst, p.Radius, p.MaxSpeed)
+	return s
+}
+
 func (m *Monitor)RunServer() error {
 	currentRoot, err := os.Getwd()
 	if err != nil {
@@ -133,6 +156,11 @@ func (m *Monitor)RunServer() error {
 
 	server.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
 		log.Printf("Connected from %s as %s", c.IP(), c.Id())
+
+		// send param
+		mu.Lock()
+		server.BroadcastToAll("param", m.RVOParam.GetJson())
+		mu.Unlock()
 		
 		// send data
 		jsonDataArray := make([]string, 0)
@@ -141,7 +169,6 @@ func (m *Monitor)RunServer() error {
 		}
 		mu.Lock()
 		server.BroadcastToAll("rvo", jsonDataArray)
-		//c.Emit("rvo", jsonDataArray)
 		mu.Unlock()
 	})
 
