@@ -1,5 +1,9 @@
 package rvosimulator
 
+import (
+	"log"
+)
+
 var (
 	Sim *RVOSimulator
 )
@@ -140,6 +144,7 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 			obstacle.NextObstacle = rvo.Obstacles[obstacleNo]
 			obstacle.NextObstacle.PrevObstacle = obstacle
 		}
+		
 
 		var ti int
 		if i == len(vertices)-1 {
@@ -165,6 +170,11 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 		}
 
 		obstacle.ID = len(rvo.Obstacles)
+
+		log.Printf("obs: %v\n", obstacle)
+		log.Printf("prevobs: %v\n", obstacle.PrevObstacle)
+		log.Printf("nextobs: %v\n", obstacle.NextObstacle)
+		log.Printf("----------\n")
 
 		rvo.Obstacles = append(rvo.Obstacles, obstacle)
 

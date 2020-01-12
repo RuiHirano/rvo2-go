@@ -29,7 +29,16 @@ func setupScenario(sim *rvo.RVOSimulator) {
 		&rvo.Vector2{X: -0.1, Y: -0.1},
 	}
 	sim.AddObstacle(obstacle1)
+	/*obstacle2 := []*rvo.Vector2{
+		&rvo.Vector2{X: 0.2, Y: 0.2},
+		&rvo.Vector2{X: -0.2, Y: 0.2},
+		&rvo.Vector2{X: -0.2, Y: -0.2},
+		&rvo.Vector2{X: 0.2, Y: -0.2},
+	}
+	sim.AddObstacle(obstacle2)*/
+	fmt.Printf("obsnum1: %v\n", len(sim.Obstacles))
 	sim.ProcessObstacles()
+	fmt.Printf("obsnum2: %v\n", len(sim.Obstacles))
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
 	fmt.Printf("Running Simulation...\n\n")
@@ -41,7 +50,7 @@ func main() {
 	// monitor 
 	mo := monitor.NewMonitor()
 
-	for step := 0; step < 50; step++ {
+	for step := 0; step < 1; step++ {
 		sim.DoStep()
 
 		var agentPositions string
@@ -51,10 +60,11 @@ func main() {
 		}
 		fmt.Printf("step=%v  t=%v  %v \n", step, strconv.FormatFloat(sim.GlobalTime, 'f', 3, 64), agentPositions)
 
+		// add data for monitor
 		mo.AddData(sim)
 	}
 
-	// if you want to watch monitor
+	// run monitor server
 	err := mo.RunServer()
 	if err != nil{
 		fmt.Printf("error occor...: ", err)

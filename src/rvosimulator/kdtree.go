@@ -2,6 +2,7 @@ package rvosimulator
 
 import (
 	"math"
+	"log"
 )
 
 var (
@@ -196,6 +197,7 @@ func (kt *KdTree) BuildObstacleTree() {
 	kt.DeleteObstacleTree(kt.ObstacleTree)
 
 	obstacles := make([]*Obstacle, len(Sim.Obstacles))
+	log.Printf("obsnum: %v\n", len(Sim.Obstacles))
 	for i := 0; i < len(Sim.Obstacles); i++ {
 		obstacles[i] = Sim.Obstacles[i]
 	}

@@ -15,17 +15,17 @@ const calcDataSize = (rvoData: any) => {
 
     rvoData.forEach((stepData: any) => {
         stepData.agents.forEach((agent: any) => {
-            if (agent.lat < ymin) {
-                ymin = agent.lat;
+            if (agent.y < ymin) {
+                ymin = agent.y;
             }
-            if (agent.lon < xmin) {
-                xmin = agent.lon;
+            if (agent.x < xmin) {
+                xmin = agent.x;
             }
-            if (agent.lat > ymax) {
-                ymax = agent.lat;
+            if (agent.y > ymax) {
+                ymax = agent.y;
             }
-            if (agent.lon > xmax) {
-                xmax = agent.lon;
+            if (agent.x > xmax) {
+                xmax = agent.x;
             }
         });
     });
@@ -43,29 +43,78 @@ const calcDataSize = (rvoData: any) => {
 
 const createScatterData = (stepData: any) => {
     console.log("stepData: %v\n", stepData);
-    var coords: any = [];
+    var datasets: any = [];
+
+    // Set Agents Dataset
+    var agentCoords: any = [];
     stepData.agents.forEach((agent: any) => {
-        coords.push({ x: agent.lon, y: agent.lat });
+        agentCoords.push({ x: agent.x, y: agent.y });
+    });
+    datasets.push({
+        label: "Agent",
+        fill: false,
+        backgroundColor: "rgba(75,192,192,0.4)",
+        pointBorderColor: "rgba(75,192,192,1)",
+        pointBackgroundColor: "#fff",
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: "rgba(75,192,192,1)",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data: agentCoords
+    });
+
+    // Set Obstacles Dataset
+    stepData.Obstacles = [
+        {
+            id: 1,
+            positions: [
+                { x: 1, y: 1 },
+                { x: 1, y: 2 },
+                { x: 2, y: 2 },
+                { x: 2, y: 1 },
+                { x: 1, y: 1 }
+            ]
+        },
+        {
+            id: 2,
+            positions: [
+                { x: 0, y: 0 },
+                { x: 0, y: 3 },
+                { x: 3, y: 3 },
+                { x: 3, y: 0 },
+                { x: 0, y: 0 }
+            ]
+        }
+    ];
+    stepData.Obstacles.forEach((obstacle: any) => {
+        var obstacleCoords: any = [];
+        obstacle.positions.forEach((position: any) => {
+            obstacleCoords.push({ x: position.x, y: position.y });
+        });
+        datasets.push({
+            label: "Obstacle" + obstacle.id.toString(),
+            fill: false,
+            showLine: true,
+            backgroundColor: "rgba(75,192,192,0.4)",
+            pointBorderColor: "rgba(75,192,192,1)",
+            lineTension: 0,
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "rgba(75,192,192,1)",
+            pointHoverBorderColor: "rgba(220,220,220,1)",
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data: obstacleCoords
+        });
     });
     const data = {
         labels: ["Scatter"],
-        datasets: [
-            {
-                label: "Monitor",
-                fill: false,
-                backgroundColor: "rgba(75,192,192,0.4)",
-                pointBorderColor: "rgba(75,192,192,1)",
-                pointBackgroundColor: "#fff",
-                pointBorderWidth: 1,
-                pointHoverRadius: 5,
-                pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                pointHoverBorderColor: "rgba(220,220,220,1)",
-                pointHoverBorderWidth: 2,
-                pointRadius: 1,
-                pointHitRadius: 10,
-                data: coords
-            }
-        ]
+        datasets: datasets
     };
 
     return data;

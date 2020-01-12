@@ -69,10 +69,10 @@ func (d *StepData) GetJson() string {
 		jsonAgent := ""
 		if i == len(d.Agents)-1 {
 			// last
-			jsonAgent = fmt.Sprintf(`{"id":%d,"lat":%f, "lon":%f}`,
+			jsonAgent = fmt.Sprintf(`{"id":%d,"y":%f, "x":%f}`,
 			agent.ID, agent.Position.Y, agent.Position.X)
 		}else{
-			jsonAgent = fmt.Sprintf(`{"id":%d,"lat":%f, "lon":%f},`,
+			jsonAgent = fmt.Sprintf(`{"id":%d,"y":%f, "x":%f},`,
 			agent.ID, agent.Position.Y, agent.Position.X)
 		}
 		jsonAgents = jsonAgents + jsonAgent
@@ -83,6 +83,10 @@ func (d *StepData) GetJson() string {
 	
 
 	jsonObstacles := "["
+	log.Printf("obs: %v\n", d.Obstacles)
+	for _, obstacle := range d.Obstacles{
+		log.Printf("obsta: %v %v\n", obstacle.ID, obstacle.Point, obstacle.NextObstacle)
+	}
 	/*for i, jsonObstacle := range d.jsonObstacles{
 		jsonObstacle = ""
 		if i == len(d.jsonObstacles)-1 {
@@ -107,7 +111,7 @@ func (m *Monitor)RunServer() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	d := filepath.Join(currentRoot, "..", "monitor", "build")
+	d := filepath.Join(currentRoot, "..", "..", "monitor", "build")
 
 	assetsDir = http.Dir(d)
 	log.Println("AssetDir:", assetsDir)
@@ -146,6 +150,34 @@ func (m *Monitor)RunServer() error {
 }
 
 func (m *Monitor)AddData(sim *rvo.RVOSimulator){
+	// to show in monitor
+	agents := make([]*rvo.Agent, 0)
+	for i := 0; i < sim.GetNumAgents(); i++ {
+		//fmt.Printf("agent: %v %v\n",  sim.GetAgent(i))
+		agent := *sim.GetAgent(i)
+		agents = append(agents, &agent)
+	}
+	m.Data = append(m.Data, &StepData{
+		Agents: agents,
+		Obstacles: sim.Obstacles,
+	})
+}
+
+func (m *Monitor)AddAgents(sim *rvo.RVOSimulator){
+	// to show in monitor
+	agents := make([]*rvo.Agent, 0)
+	for i := 0; i < sim.GetNumAgents(); i++ {
+		//fmt.Printf("agent: %v %v\n",  sim.GetAgent(i))
+		agent := *sim.GetAgent(i)
+		agents = append(agents, &agent)
+	}
+	m.Data = append(m.Data, &StepData{
+		Agents: agents,
+		Obstacles: sim.Obstacles,
+	})
+}
+
+func (m *Monitor)AddObstacles(sim *rvo.RVOSimulator){
 	// to show in monitor
 	agents := make([]*rvo.Agent, 0)
 	for i := 0; i < sim.GetNumAgents(); i++ {
