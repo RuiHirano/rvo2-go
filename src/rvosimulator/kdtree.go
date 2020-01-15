@@ -394,7 +394,7 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 
 		var agentLeftOfLine, distSqLine float64
 		agentLeftOfLine = LeftOf(obstacle1.Point, obstacle2.Point, agent.Position)
-
+		
 		var tNode *ObstacleTreeNode
 		if agentLeftOfLine >= 0 {
 			tNode = node.Left

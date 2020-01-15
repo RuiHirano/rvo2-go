@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"strconv"
 	"math/rand"
-
-	rvo "../../src/rvosimulator"
+	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
+	monitor "github.com/RuiHirano/rvo2-go/monitor"
 )
 
 var (
@@ -18,93 +18,99 @@ func init() {
 
 func setupScenario(sim *rvo.RVOSimulator) {
 
-	sim.SetTimeStep(0.25)
-
-	sim.SetAgentDefaults(15.0, 10, 5.0, 5.0, 2.0, 2.0, &rvo.Vector2{})
-
-	for i := 0; i < 5; i++ {
-		for j := 0; j < 5; j++ {
-			id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 55.0 + float64(i)*10.0, Y: 55.0 + float64(j)*10.0})
-			sim.SetAgentGoal(id, &rvo.Vector2{X: 75.0, Y: 75.0})
+	for i := 0; i < 1; i++ {
+		for j := 0; j < 1; j++ {
+			id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 3 + 0.1*rand.Float64(), Y: 0.8*rand.Float64()})
+			sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 0+ 0.01*rand.Float64(), Y: -2 - 0.01*rand.Float64()})
+			id, _ = sim.AddDefaultAgent(&rvo.Vector2{X: -5 + 0.1*rand.Float64(), Y: -0.8*rand.Float64()})
+			sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 2+ 0.01*rand.Float64(), Y: 1 + 0.01*rand.Float64()})
+			id, _ = sim.AddDefaultAgent(&rvo.Vector2{X: -2 + 0.1*rand.Float64(), Y: 5.5 + -0.8*rand.Float64()})
+			sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 0+ 0.01*rand.Float64(), Y: -2 + 0.01*rand.Float64()})
+			id, _ = sim.AddDefaultAgent(&rvo.Vector2{X: -2 + 0.1*rand.Float64(), Y: -5.5 + -0.8*rand.Float64()})
+			sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 0+ 0.01*rand.Float64(), Y: 2 + 0.01*rand.Float64()})
+			id, _ = sim.AddDefaultAgent(&rvo.Vector2{X: -2 + 0.1*rand.Float64(), Y: -5.5 + -0.8*rand.Float64()})
+			sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: 3+ 0.01*rand.Float64(), Y: -2 + 0.01*rand.Float64()})
 		}
 	}
 
+	// Add (polygonal) obstacles, specifying their vertices in counterclockwise order
 	obstacle1 := []*rvo.Vector2{
-		&rvo.Vector2{X: -10.0, Y: -40.0},
-		&rvo.Vector2{X: -40.0, Y: -40.0},
-		&rvo.Vector2{X: -40.0, Y: -10.0},
-		&rvo.Vector2{X: -10.0, Y: -10.0},
+		&rvo.Vector2{X: -1, Y: 4.0},
+		&rvo.Vector2{X: -4.0, Y: 4.0},
+		&rvo.Vector2{X: -4.0, Y: 1},
+		&rvo.Vector2{X: -1, Y: 1},
 	}
 	obstacle2 := []*rvo.Vector2{
-		&rvo.Vector2{X: 10.0, Y: 40.0},
-		&rvo.Vector2{X: 10.0, Y: 10.0},
-		&rvo.Vector2{X: 40.0, Y: 10.0},
-		&rvo.Vector2{X: 40.0, Y: 40.0},
+		&rvo.Vector2{X: 1, Y: 4.0},
+		&rvo.Vector2{X: 4.0, Y: 4.0},
+		&rvo.Vector2{X: 4.0, Y: 1},
+		&rvo.Vector2{X: 1, Y: 1},
 	}
 	obstacle3 := []*rvo.Vector2{
-		&rvo.Vector2{X: 10.0, Y: -40.0},
-		&rvo.Vector2{X: 40.0, Y: -40.0},
-		&rvo.Vector2{X: 40.0, Y: -10.0},
-		&rvo.Vector2{X: 10.0, Y: -10.0},
+		&rvo.Vector2{X: -1, Y: -4.0},
+		&rvo.Vector2{X: -1, Y: -1},
+		&rvo.Vector2{X: -4.0, Y: -1},
+		&rvo.Vector2{X: -4.0, Y: -4.0},
 	}
 	obstacle4 := []*rvo.Vector2{
-		&rvo.Vector2{X: -10.0, Y: -40.0},
-		&rvo.Vector2{X: -10.0, Y: -10.0},
-		&rvo.Vector2{X: -40.0, Y: -10.0},
-		&rvo.Vector2{X: -40.0, Y: -40.0},
+		&rvo.Vector2{X: 1, Y: -4.0},
+		&rvo.Vector2{X: 4.0, Y: -4.0},
+		&rvo.Vector2{X: 4.0, Y: -1},
+		&rvo.Vector2{X: 1, Y: -1},
+	}
+
+	// clockwise order: a wall is formed from inside to outside
+	obstacle5 := []*rvo.Vector2{
+		&rvo.Vector2{X: 6, Y: 6},
+		&rvo.Vector2{X: 6, Y: -6},
+		&rvo.Vector2{X: -6, Y: -6},
+		&rvo.Vector2{X: -6, Y: 6},
 	}
 	sim.AddObstacle(obstacle1)
 	sim.AddObstacle(obstacle2)
 	sim.AddObstacle(obstacle3)
 	sim.AddObstacle(obstacle4)
+	sim.AddObstacle(obstacle5)
 	sim.ProcessObstacles()
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
 	fmt.Printf("Running Simulation...\n\n")
 }
 
-func updateVisualization(sim *rvo.RVOSimulator) {
-	fmt.Printf("Time: %v\n", sim.GetGlobalTime())
-
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		fmt.Printf("ID: %v,  Position: %v\n", i, sim.GetAgentPosition(i))
-	}
-}
-
-func setPreferredVelocities(sim *rvo.RVOSimulator) {
-	for i := 0; i < sim.GetNumAgents(); i++ {
-		goalVector := sim.GetAgentGoalVector(i)
-
-		if rvo.Sqr(goalVector) > 1.0 {
-			goalVector = rvo.Normalize(goalVector)
+func showStatus(sim *rvo.RVOSimulator, step int){
+	var agentPositions string
+		agentPositions = ""
+		for j := 0; j < sim.GetNumAgents(); j++ {
+			agentPositions = agentPositions + " (" + strconv.FormatFloat(sim.GetAgentPosition(j).X, 'f', 3, 64) + "," + strconv.FormatFloat(sim.GetAgentPosition(j).Y, 'f', 4, 64) + ") "
 		}
+		fmt.Printf("step=%v  t=%v  %v \n", step+1, strconv.FormatFloat(sim.GlobalTime, 'f', 3, 64), agentPositions)
 
-		sim.SetAgentPrefVelocity(i, goalVector)
-
-		/*
-		 * Perturb a little to avoid deadlocks due to perfect symmetry.
-		 */
-		angle := float64(rand.Intn(RAND_MAX)) * 2.0 * math.Pi / float64(RAND_MAX)
-		dist := float64(rand.Intn(RAND_MAX)) * 0.0001 / float64(RAND_MAX)
-
-		sim.SetAgentPrefVelocity(i, rvo.Add(sim.GetAgentPrefVelocity(i), rvo.MulOne(&rvo.Vector2{X: math.Cos(angle), Y: math.Sin(angle)}, dist)))
-	}
 }
 
 func main() {
-	sim := rvo.NewEmptyRVOSimulator()
+	timeStep := 0.20
+	neighborDist := 0.5 
+	maxneighbors := 20  
+	timeHorizon := 0.5
+	timeHorizonObst := 0.5
+	radius := 0.01  
+	maxSpeed := 0.5 
+	sim := rvo.NewRVOSimulator(timeStep, neighborDist, maxneighbors, timeHorizon, timeHorizonObst, radius, maxSpeed, &rvo.Vector2{X: 0, Y: 0})
 	setupScenario(sim)
+	// monitor 
+	mo := monitor.NewMonitor(sim)
 
-	for {
-		fmt.Printf("goal %v\n", rvo.Sqr(rvo.Sub(sim.GetAgentPosition(0), sim.GetAgentGoalVector(0))))
-		if sim.IsReachedGoal() {
-			break
-		}
-
-		updateVisualization(sim)
-
-		setPreferredVelocities(sim)
+	for step := 0; step < 34; step++ {
 
 		sim.DoStep()
+		showStatus(sim, step)
+
+		// add data for monitor
+		mo.AddData(sim)
+	}
+	// run monitor server
+	err := mo.RunServer()
+	if err != nil{
+		fmt.Printf("error occor...: ", err)
 	}
 }

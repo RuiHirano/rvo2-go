@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
-
+	"math/rand"
 	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
 	monitor "github.com/RuiHirano/rvo2-go/monitor"
 )
@@ -11,9 +11,9 @@ import (
 
 func setupScenario(sim *rvo.RVOSimulator) {
 
-	for i := 0; i < 8; i++ {
-		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 2.4, Y: 0 + float64(i)*0.01})
-		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: -2, Y: 0})
+	for i := 0; i < 50; i++ {
+		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 2.4+ 0.01*rand.Float64(), Y: 0 + 0.01*rand.Float64()})
+		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: -2+ 0.01*rand.Float64(), Y: 0+ 0.01*rand.Float64()})
 	}
 
 	obstacle := []*rvo.Vector2{

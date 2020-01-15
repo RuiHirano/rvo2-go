@@ -109,6 +109,7 @@ func (a *Agent) ComputeNewVelocity() {
 	/* Create obstacle ORCA lines. */
 	for i := 0; i < len(a.ObstacleNeighbors); i++ {
 
+
 		var obstacle1, obstacle2 *Obstacle
 		obstacle1 = a.ObstacleNeighbors[i].Obstacle
 		obstacle2 = obstacle1.NextObstacle
@@ -170,8 +171,8 @@ func (a *Agent) ComputeNewVelocity() {
 
 			continue
 		} else if s >= 0 && s < 1 && distSqLine <= radiusSq {
-			// ここにくるのがおかしい
 			/* Collision with obstacle segment. */
+
 			line.Point = NewVector2(0, 0)
 			line.Direction = Flip(obstacle1.UnitDir)
 			a.OrcaLines = append(a.OrcaLines, &line)
@@ -193,6 +194,7 @@ func (a *Agent) ComputeNewVelocity() {
 			 * defines velocity obstacle.
 			 */
 			if !obstacle1.IsConvex {
+
 				/* Ignore obstacle. */
 				continue
 			}
@@ -335,6 +337,7 @@ func (a *Agent) ComputeNewVelocity() {
 			line.Direction = leftLegDirection
 			line.Point = Add(leftCutoff, MulOne(NewVector2(-line.Direction.Y, line.Direction.X), a.Radius*invTimeHorizonObst))
 			a.OrcaLines = append(a.OrcaLines, &line)
+
 			continue
 		} else {
 			/* Project on right leg. */

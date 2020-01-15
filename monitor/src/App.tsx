@@ -406,6 +406,9 @@ const App: React.FC = () => {
                             width={1}
                             height={1}
                             options={{
+								legend: {
+									display: false
+								},
                                 maintainAspectRatio: false,
                                 events: ["click"],
                                 onClick: function(e: any, el: any) {
