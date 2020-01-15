@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	//"math"
 	gosocketio "github.com/mtfelian/golang-socketio"
 	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
 )

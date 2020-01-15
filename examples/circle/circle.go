@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	rvo "../../src/rvosimulator"
+	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
+	monitor "github.com/RuiHirano/rvo2-go/monitor"
 )
 
 var (
@@ -57,8 +58,11 @@ func setPreferredVelocities(sim *rvo.RVOSimulator) {
 
 func main() {
 	sim := rvo.NewEmptyRVOSimulator()
-
 	setupScenario(sim)
+
+	// monitor 
+	mo := monitor.NewMonitor(sim)
+
 	for {
 		if sim.IsReachedGoal() {
 			fmt.Printf("Goal \n ")
@@ -69,5 +73,16 @@ func main() {
 
 		setPreferredVelocities(sim)
 		sim.DoStep()
+
+
+		// add data for monitor
+		mo.AddData(sim)
 	}
+
+		// run monitor server
+		err := mo.RunServer()
+		if err != nil{
+			fmt.Printf("error occor...: ", err)
+		}
+	
 }
