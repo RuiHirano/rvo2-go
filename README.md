@@ -3,6 +3,33 @@
 New updates are released there. 
 There are no explicit version numbers -- all commits on the master branch are supposed to be stable.
 
+## Latest Update: Simulation Monitor
+1. import Monitor
+```go
+import (
+	monitor "github.com/RuiHirano/rvo2-go/monitor"
+)
+```
+2. Create Monitor Instance
+```go
+mo := monitor.NewMonitor(sim)
+```
+
+3. Add Result of Each Step
+```go
+mo.AddData(sim)
+```
+
+4. Run Server
+```go
+err := mo.RunServer()
+if err != nil{
+	fmt.Printf("error occor...: ", err)
+}
+```
+
+You can watch simulation monitor at localhost:8000!
+
 ## Building & installing
 
 ```
@@ -21,7 +48,7 @@ import (
 	"fmt"
 	"strconv"
 
-	rvo "../../src/rvosimulator"
+	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
 )
 
 var (
