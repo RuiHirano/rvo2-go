@@ -24,29 +24,33 @@ func Flip(vec *Vector2) *Vector2 {
 	return &Vector2{X: -vec.X, Y: -vec.Y}
 }
 
-// Sub :
+// GRound: Global Round, to reduce calculation error
+func GRound(v float64) float64{
+	return math.Round(v * 1000000000) / 1000000000
+}
+// Sub: 
 func Sub(vec1 *Vector2, vec2 *Vector2) *Vector2 {
-	return &Vector2{X: vec1.X - vec2.X, Y: vec1.Y - vec2.Y}
+	return &Vector2{X: GRound(vec1.X - vec2.X), Y: GRound(vec1.Y - vec2.Y)}
 }
 
 // Add :
 func Add(vec1 *Vector2, vec2 *Vector2) *Vector2 {
-	return &Vector2{X: vec1.X + vec2.X, Y: vec1.Y + vec2.Y}
+	return &Vector2{X: GRound(vec1.X + vec2.X), Y: GRound(vec1.Y + vec2.Y)}
 }
 
 // Mul :
 func Mul(vec1 *Vector2, vec2 *Vector2) float64 {
-	return vec1.X*vec2.X + vec1.Y*vec2.Y
+	return GRound(vec1.X*vec2.X + vec1.Y*vec2.Y)
 }
 
 // MulOne :
 func MulOne(vec *Vector2, s float64) *Vector2 {
-	return &Vector2{X: vec.X * s, Y: vec.Y * s}
+	return &Vector2{X: GRound(vec.X * s), Y: GRound(vec.Y * s)}
 }
 
 // Div :
 func Div(vec *Vector2, s float64) *Vector2 {
-	return &Vector2{X: vec.X / s, Y: vec.Y / s}
+	return &Vector2{X: GRound(vec.X / s), Y: GRound(vec.Y / s)}
 }
 
 // Equal :
@@ -86,7 +90,7 @@ func Sqr(vec *Vector2) float64 {
 
 // Abs :
 func Abs(vec *Vector2) float64 {
-	return float64(math.Sqrt(float64(Mul(vec, vec))))
+	return GRound(math.Sqrt(Mul(vec, vec)))
 }
 
 // Normalize :
@@ -96,7 +100,7 @@ func Normalize(vec *Vector2) *Vector2 {
 
 // Det :
 func Det(vec1 *Vector2, vec2 *Vector2) float64 {
-	return vec1.X*vec2.Y - vec1.Y*vec2.X
+	return GRound(vec1.X*vec2.Y - vec1.Y*vec2.X)
 }
 
 // LeftOf :
@@ -109,10 +113,10 @@ func DistSqPointLineSegment(vec1 *Vector2, vec2 *Vector2, vec3 *Vector2) float64
 	r := Mul(Sub(vec3, vec1), Sub(vec2, vec1)) / Sqr(Sub(vec2, vec1))
 
 	if r < 0 {
-		return Sqr(Sub(vec3, vec1))
+		return GRound(Sqr(Sub(vec3, vec1)))
 	} else if r > 1 {
-		return Sqr(Sub(vec3, vec2))
+		return GRound(Sqr(Sub(vec3, vec2)))
 	} else {
-		return Sqr(Sub(vec3, Add(vec1, MulOne(Sub(vec2, vec1), r))))
+		return GRound(Sqr(Sub(vec3, Add(vec1, MulOne(Sub(vec2, vec1), r)))))
 	}
 }

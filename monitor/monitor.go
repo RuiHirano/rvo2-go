@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	//"math"
 	gosocketio "github.com/mtfelian/golang-socketio"
 	rvo "github.com/RuiHirano/rvo2-go/src/rvosimulator"
 )
@@ -50,6 +51,9 @@ func NewMonitor(sim *rvo.RVOSimulator) *Monitor{
 		Data: make([]*StepData, 0),
 		RVOParam: param,
 	}
+	// add initial data
+	m.AddData(sim)
+
 	return m
 }
 
@@ -79,17 +83,47 @@ func assetsFileHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeContent(w, r, file, fi.ModTime(), f)
 }
 
+
 func (d *StepData) GetJson() string {
 	jsonAgents := "["
 	for i, agent := range d.Agents{
+
+		// orcaLines
+		jsonOrcaLines := "["
+		for j, line := range agent.OrcaLines{
+				//log.Printf("-----Line %v %v\n", line.Point, line.Direction)
+			jsonOrcaLine := ""
+			/*if j == len(obstacle)-1 {
+				// last
+				// 図形を閉じるため最後に一つ追加する
+				jsonOrcaLine = fmt.Sprintf(`{"x":%f, "y":%f},{"x":%f, "y":%f}`,
+				position.X, position.Y, obstacle[0].X, obstacle[0].Y)
+
+			}else{*/
+				if j == len(agent.OrcaLines)-1 {
+					// last
+					// 図形を閉じるため最後に一つ追加する
+					jsonOrcaLine = jsonOrcaLine + fmt.Sprintf(`{"point":{"x":%f, "y":%f},"direction":{"x":%f, "y":%f}}`,
+				line.Point.X, line.Point.Y, line.Direction.X, line.Direction.Y)
+				}else{
+					jsonOrcaLine = fmt.Sprintf(`{"point":{"x":%f, "y":%f},"direction":{"x":%f, "y":%f}},`,
+					line.Point.X, line.Point.Y, line.Direction.X, line.Direction.Y)
+				}
+
+			
+			jsonOrcaLines = jsonOrcaLines + jsonOrcaLine
+		}
+		jsonOrcaLines = jsonOrcaLines + "]"
+
+		// agents
 		jsonAgent := ""
 		if i == len(d.Agents)-1 {
 			// last
-			jsonAgent = fmt.Sprintf(`{"id":%d,"y":%f, "x":%f}`,
-			agent.ID, agent.Position.Y, agent.Position.X)
+			jsonAgent = fmt.Sprintf(`{"id":%d,"position":{"x":%f, "y":%f},"velocity":{"x":%f,"y":%f},"orcaLines":%s}`,
+			agent.ID, agent.Position.X, agent.Position.Y, agent.Velocity.X, agent.Velocity.Y, jsonOrcaLines)
 		}else{
-			jsonAgent = fmt.Sprintf(`{"id":%d,"y":%f, "x":%f},`,
-			agent.ID, agent.Position.Y, agent.Position.X)
+			jsonAgent = fmt.Sprintf(`{"id":%d,"position":{"x":%f, "y":%f},"velocity":{"x":%f,"y":%f},"orcaLines":%s},`,
+			agent.ID, agent.Position.X, agent.Position.Y, agent.Velocity.X, agent.Velocity.Y, jsonOrcaLines)
 		}
 		jsonAgents = jsonAgents + jsonAgent
 	} 
@@ -156,11 +190,6 @@ func (m *Monitor)RunServer() error {
 
 	server.On(gosocketio.OnConnection, func(c *gosocketio.Channel) {
 		log.Printf("Connected from %s as %s", c.IP(), c.Id())
-
-		// send param
-		mu.Lock()
-		server.BroadcastToAll("param", m.RVOParam.GetJson())
-		mu.Unlock()
 		
 		// send data
 		jsonDataArray := make([]string, 0)
@@ -169,6 +198,11 @@ func (m *Monitor)RunServer() error {
 		}
 		mu.Lock()
 		server.BroadcastToAll("rvo", jsonDataArray)
+		mu.Unlock()
+
+		// send param
+		mu.Lock()
+		server.BroadcastToAll("param", m.RVOParam.GetJson())
 		mu.Unlock()
 	})
 
@@ -189,6 +223,15 @@ func (m *Monitor)RunServer() error {
 	return nil
 }
 
+func (m *Monitor)shiftOrcaLines(agents []*rvo.Agent){
+	// m.Dataが空の場合、スキップ
+	if len(m.Data) > 0{
+		for i, agent := range agents{
+			m.Data[len(m.Data)-1].Agents[i].OrcaLines = agent.OrcaLines
+		}
+	}
+}
+
 func (m *Monitor)AddData(sim *rvo.RVOSimulator){
 	// to show in monitor
 	agents := make([]*rvo.Agent, 0)
@@ -197,6 +240,11 @@ func (m *Monitor)AddData(sim *rvo.RVOSimulator){
 		agent := *sim.GetAgent(i)
 		agents = append(agents, &agent)
 	}
+
+	// orcaLinesを一つずらす
+	m.shiftOrcaLines(agents)
+
+	// obstacles
 	obstacles := make([][]*rvo.Vector2, 0)
 	for i := 0; i < sim.GetNumObstacles(); i++ {
 		obstacle := sim.GetObstacle(i)

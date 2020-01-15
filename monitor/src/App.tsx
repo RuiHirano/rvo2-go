@@ -1,47 +1,95 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Scatter } from "react-chartjs-2";
 import io from "socket.io-client";
 import Slider from "@material-ui/core/Slider";
-import { Typography } from "@material-ui/core";
+import { Typography, Button } from "@material-ui/core";
 
-const rvodata = {};
+interface Coord {
+    X: number;
+    Y: number;
+}
+
+interface ORCALine {
+    Point: Coord;
+    Direction: Coord;
+}
+
+interface Agent {
+    ID: number;
+    Position: Coord;
+    Velocity: Coord;
+    ORCALines: ORCALine[];
+    IsShowLine: boolean;
+}
+
+interface Obstacle {
+    ID: number;
+    Positions: Coord[];
+}
+
+interface StepData {
+    Index: number;
+    Obstacles: Obstacle[];
+    Agents: Agent[];
+}
+
+interface Param {
+    TimeStep: number;
+    NeighborDist: number;
+    MaxNeighbors: number;
+    TimeHorizon: number;
+    TimeHorizonObst: number;
+    Radius: number;
+    MaxSpeed: number;
+}
+
+interface DataSize {
+    xMax: number;
+    xMin: number;
+    yMax: number;
+    yMin: number;
+}
 
 const socket: SocketIOClient.Socket = io();
 
-const calcDataSize = (rvoData: any) => {
+const mulVec = (vec1: Coord, vec2: Coord): number => {
+    return vec1.X * vec2.X + vec1.Y * vec2.Y;
+};
+
+const calcDataSize = (data: StepData[]) => {
     var xmax: number = -Infinity;
     var ymax: number = -Infinity;
     var xmin: number = Infinity;
     var ymin: number = Infinity;
 
-    rvoData.forEach((stepData: any) => {
-        stepData.agents.forEach((agent: any) => {
-            if (agent.y < ymin) {
-                ymin = agent.y;
+    data.forEach((stepData: StepData) => {
+        stepData.Agents.forEach((agent: Agent) => {
+            if (agent.Position.Y < ymin) {
+                ymin = agent.Position.Y;
             }
-            if (agent.x < xmin) {
-                xmin = agent.x;
+            if (agent.Position.X < xmin) {
+                xmin = agent.Position.X;
             }
-            if (agent.y > ymax) {
-                ymax = agent.y;
+            if (agent.Position.Y > ymax) {
+                ymax = agent.Position.Y;
             }
-            if (agent.x > xmax) {
-                xmax = agent.x;
+            if (agent.Position.X > xmax) {
+                xmax = agent.Position.X;
             }
         });
-        stepData.obstacles.forEach((obstacle: any) => {
-            obstacle.positions.forEach((position: any) => {
-                if (position.y < ymin) {
-                    ymin = position.y;
+        stepData.Obstacles.forEach((obstacle: Obstacle) => {
+            obstacle.Positions.forEach((position: Coord) => {
+                if (position.Y < ymin) {
+                    ymin = position.Y;
                 }
-                if (position.x < xmin) {
-                    xmin = position.x;
+                if (position.X < xmin) {
+                    xmin = position.X;
                 }
-                if (position.y > ymax) {
-                    ymax = position.y;
+                if (position.Y > ymax) {
+                    ymax = position.Y;
                 }
-                if (position.x > xmax) {
-                    xmax = position.x;
+                if (position.X > xmax) {
+                    xmax = position.X;
                 }
             });
         });
@@ -58,50 +106,126 @@ const calcDataSize = (rvoData: any) => {
     return size;
 };
 
-const createScatterData = (stepData: any) => {
+const createScatterData = (
+    stepData: StepData,
+    dataSize: DataSize,
+    param: Param,
+    isFill: boolean
+) => {
     var datasets: any = [];
 
     // Set Agents Dataset
-    var agentCoords: any = [];
-    stepData.agents.forEach((agent: any) => {
-        agentCoords.push({ x: agent.x, y: agent.y });
-    });
-    datasets.push({
-        label: "Agent",
-        fill: false,
-        backgroundColor: "rgba(75,192,192,0.4)",
-        pointBorderColor: "rgba(75,192,192,1)",
-        pointBackgroundColor: "#fff",
-        pointBorderWidth: 1,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: "rgba(75,192,192,1)",
-        pointHoverBorderColor: "rgba(220,220,220,1)",
-        pointHoverBorderWidth: 2,
-        pointRadius: 1,
-        pointHitRadius: 10,
-        data: agentCoords
+    stepData.Agents.forEach((agent: Agent) => {
+        const agentCoord = [{ x: agent.Position.X, y: agent.Position.Y }];
+        // set ORCA Lines
+        if (agent.IsShowLine) {
+            const epsiron: number = 0.000001;
+            agent.ORCALines.forEach((line: ORCALine, index: number) => {
+                var orcaCoords: any = [];
+                // y =  line.Direction.Y /line.Direction.X * (x - line.Point.X) + line.Point.Y;
+                // epsiron: to show line, to add a few trand
+
+                orcaCoords.push({
+                    x: dataSize.xMin,
+                    y:
+                        (line.Direction.Y / (line.Direction.X + epsiron)) *
+                            (dataSize.xMin -
+                                agent.Position.X -
+                                param.TimeStep * line.Point.X) +
+                        agent.Position.Y +
+                        param.TimeStep * line.Point.Y
+                });
+                orcaCoords.push({
+                    x: dataSize.xMax,
+                    y:
+                        (line.Direction.Y / (line.Direction.X + epsiron)) *
+                            (dataSize.xMax -
+                                agent.Position.X -
+                                param.TimeStep * line.Point.X) +
+                        agent.Position.Y +
+                        param.TimeStep * line.Point.Y
+                });
+                let fill: boolean | string = false;
+                let fillColor: string = "rgba(255,255,255,0.5)";
+                let backgroundColor: string = "rgba(255,255,255,0.5)";
+                if (isFill) {
+                    if (mulVec(line.Direction, agent.Velocity) > 0) {
+                        fill = "start";
+                        fillColor = "rgba(0,255,0,0.5)";
+                        backgroundColor = "rgba(0,255,0,0.5)";
+                    } else if (mulVec(line.Direction, agent.Velocity) < 0) {
+                        fill = "end";
+                        fillColor = "rgba(255,0,0,0.5)";
+                        backgroundColor = "rgba(255,0,0,0.5)";
+                    }
+                }
+                datasets.push({
+                    label:
+                        "OrcaLine" +
+                        agent.ID.toString() +
+                        "-" +
+                        index.toString(),
+                    fill: fill,
+                    fillColor: fillColor,
+                    backgroundColor: backgroundColor,
+                    showLine: true,
+                    borderColor: "rgba(255,0,0,1)",
+                    borderWidth: 1,
+                    lineTension: 0,
+                    data: orcaCoords
+                });
+            });
+            datasets.push({
+                id: agent.ID,
+                label: "Agent" + agent.ID.toString(),
+                fill: false,
+                backgroundColor: "rgba(75,192,192,1)",
+                pointBorderColor: "rgba(255,0,0,1)",
+                pointBackgroundColor: "rgba(255,0,0,1)",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 5,
+                pointHitRadius: 10,
+                data: agentCoord
+            });
+        } else {
+            datasets.push({
+                id: agent.ID,
+                label: "Agent" + agent.ID.toString(),
+                fill: false,
+                backgroundColor: "rgba(0,0,255,1)",
+                pointBorderColor: "rgba(0,0,255,1)",
+                pointBackgroundColor: "rgba(0,0,255,1)",
+                pointBorderWidth: 1,
+                pointHoverRadius: 5,
+                pointHoverBackgroundColor: "rgba(75,192,192,1)",
+                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBorderWidth: 2,
+                pointRadius: 2,
+                pointHitRadius: 10,
+                data: agentCoord
+            });
+        }
     });
 
-    stepData.obstacles.forEach((obstacle: any) => {
+    // Set Obstacles Dataset
+    stepData.Obstacles.forEach((obstacle: Obstacle) => {
         var obstacleCoords: any = [];
-        obstacle.positions.forEach((position: any) => {
-            obstacleCoords.push({ x: position.x, y: position.y });
+        obstacle.Positions.forEach((position: Coord) => {
+            obstacleCoords.push({ x: position.X, y: position.Y });
         });
         datasets.push({
-            label: "Obstacle" + obstacle.id.toString(),
+            label: "Obstacle" + obstacle.ID.toString(),
             fill: false,
             showLine: true,
-            backgroundColor: "rgba(75,192,192,0.4)",
-            pointBorderColor: "rgba(75,192,192,1)",
+            borderColor: "rgba(0,0,0,1)",
+            pointHoverRadius: 0,
+            pointBorderWidth: 0,
+            pointRadius: 0,
             lineTension: 0,
-            pointBackgroundColor: "#fff",
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: "rgba(75,192,192,1)",
-            pointHoverBorderColor: "rgba(220,220,220,1)",
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10,
             data: obstacleCoords
         });
     });
@@ -113,19 +237,105 @@ const createScatterData = (stepData: any) => {
     return data;
 };
 
-interface DataSize {
-    xMax: number;
-    xMin: number;
-    yMax: number;
-    yMin: number;
-}
+const setParamType = (anyParam: any): Param => {
+    var param: Param = {
+        TimeStep: anyParam.timeStep,
+        NeighborDist: anyParam.neighborDist,
+        MaxNeighbors: anyParam.maxNeighbors,
+        TimeHorizon: anyParam.timeHorizon,
+        TimeHorizonObst: anyParam.timeHorizonObst,
+        Radius: anyParam.radius,
+        MaxSpeed: anyParam.maxSpeed
+    };
+    return param;
+};
+
+const setRVODataType = (anyData: any): StepData[] => {
+    let data: StepData[] = [];
+    anyData.forEach((element: any, index: number) => {
+        let obstacles: Obstacle[] = [];
+        element.obstacles.forEach((obstacle: any) => {
+            let positions: Coord[] = [];
+            obstacle.positions.forEach((position: any) => {
+                const pos: Coord = {
+                    X: position.x,
+                    Y: position.y
+                };
+                positions.push(pos);
+            });
+            const obst: Obstacle = {
+                ID: obstacle.id,
+                Positions: positions
+            };
+            obstacles.push(obst);
+        });
+
+        let agents: Agent[] = [];
+        element.agents.forEach((agent: any) => {
+            let orcaLines: ORCALine[] = [];
+            agent.orcaLines.forEach((line: any) => {
+                const point: Coord = {
+                    X: line.point.x,
+                    Y: line.point.y
+                };
+                const direction: Coord = {
+                    X: line.direction.x,
+                    Y: line.direction.y
+                };
+                const orcaLine: ORCALine = {
+                    Point: point,
+                    Direction: direction
+                };
+                orcaLines.push(orcaLine);
+            });
+            const position: Coord = {
+                X: agent.position.x,
+                Y: agent.position.y
+            };
+            const velocity: Coord = {
+                X: agent.velocity.x,
+                Y: agent.velocity.y
+            };
+            const ag: Agent = {
+                ID: agent.id,
+                Position: position,
+                Velocity: velocity,
+                ORCALines: orcaLines,
+                IsShowLine: false
+            };
+            agents.push(ag);
+        });
+
+        const stepData: StepData = {
+            Obstacles: obstacles,
+            Agents: agents,
+            Index: index
+        };
+        data.push(stepData);
+    });
+    return data;
+};
+
+const defaultParam: Param = {
+    TimeStep: 0,
+    NeighborDist: 0,
+    MaxNeighbors: 0,
+    TimeHorizon: 0,
+    TimeHorizonObst: 0,
+    Radius: 0,
+    MaxSpeed: 0
+};
 
 const App: React.FC = () => {
+    const [loading, setLoading] = useState<boolean>(true);
     // all rvo data
-    const [data, setData] = useState([]);
+    const [data, setData] = useState<StepData[]>([]);
+    const [isFill, setIsFill] = useState<boolean>(false);
+    const [isScale, setIsScale] = useState<boolean>(false);
     // each step rvo data
-    const [stepData, setStepData] = useState({});
-    const [param, setParam] = useState<any>({});
+    //const [stepData, setStepData] = useState<StepData>(defaultStepData);
+    const [showIndex, setShowIndex] = useState<number>(0);
+    const [param, setParam] = useState<Param>(defaultParam);
     const [dataSize, setDataSize] = useState<DataSize>({
         xMax: 10,
         xMin: 0,
@@ -133,55 +343,86 @@ const App: React.FC = () => {
         yMin: 0
     });
 
+    useEffect(() => {}, [data]);
+
     socket.on("connect", () => {
         console.log("Socket.IO connected!");
     });
     socket.on("rvo", (strData: string[]) => {
-        var rvoData: any = [];
+        console.log("strData: ", strData);
+        var anyData: any = [];
         // dataのparseとsizeを計算
         strData.forEach(value => {
-            rvoData.push(JSON.parse(value));
+            anyData.push(JSON.parse(value));
         });
-        console.log("rvoData: ", rvoData);
-        const size = calcDataSize(rvoData);
+        console.log("anyData: ", anyData);
+        const data: StepData[] = setRVODataType(anyData);
+        const size: DataSize = calcDataSize(data);
+        console.log("data: ", data);
 
-        setData(rvoData);
-        setStepData(rvoData[0]);
+        setData(data);
+        //setStepData(data[0]);
         setDataSize(size);
+        setLoading(false);
     });
 
-    socket.on("param", (param: string) => {
-        console.log("param: ", param);
-        const rvoParam = JSON.parse(param);
-        setParam(rvoParam);
+    socket.on("param", (strParam: string) => {
+        console.log("param: ", strParam);
+        const rvoParam = JSON.parse(strParam);
+        const param: Param = setParamType(rvoParam);
+        setParam(param);
     });
 
     socket.on("disconnect", () => {
         console.log("Socket.IO disconnected!");
     });
-
     const height = dataSize.yMax - dataSize.yMin;
     const width = dataSize.xMax - dataSize.xMin;
 
     return (
         <div className="App">
             <h2>RVO2 Simulation Monitor</h2>
-            {Object.keys(stepData).length === 0 ? (
+            {loading ? (
                 <h2>Loading...</h2>
             ) : (
                 <div>
                     <div
-                        style={{
-                            width: 600,
-                            height: (600 * height) / width
-                        }}
+                        style={
+                            isScale
+                                ? {
+                                      width: (600 * width) / height,
+                                      height: 600
+                                  }
+                                : { width: 600, height: 600 }
+                        }
                     >
                         <Scatter
-                            data={createScatterData(stepData)}
+                            data={createScatterData(
+                                data[showIndex],
+                                dataSize,
+                                param,
+                                isFill
+                            )}
                             width={1}
                             height={1}
                             options={{
                                 maintainAspectRatio: false,
+                                events: ["click"],
+                                onClick: function(e: any, el: any) {
+                                    if (!el || el.length === 0) return;
+                                    const index: number =
+                                        el[0]._chart.data.datasets[
+                                            el[0]._datasetIndex
+                                        ].id;
+                                    // data内の全てのステップ変更
+                                    var data2 = [...data];
+                                    data2.forEach((sd: StepData) => {
+                                        sd.Agents[index].IsShowLine = !sd
+                                            .Agents[index].IsShowLine;
+                                    });
+                                    //setStepData(sd);
+                                    setData(data2);
+                                },
                                 scales: {
                                     yAxes: [
                                         {
@@ -205,42 +446,71 @@ const App: React.FC = () => {
                             }}
                         />
                     </div>
-                    <Slider
-                        defaultValue={0}
-                        aria-labelledby="discrete-slider"
-                        valueLabelDisplay="auto"
-                        onChange={(object, value) => {
-                            if (data.length > value) {
-                                if (typeof value === "number") {
-                                    setStepData(data[value]);
+                    <div
+                        style={
+                            isScale
+                                ? {
+                                      width: (600 * width) / height
+                                  }
+                                : { width: 600 }
+                        }
+                    >
+                        <Slider
+                            defaultValue={0}
+                            aria-labelledby="discrete-slider"
+                            valueLabelDisplay="auto"
+                            onChange={(object, index) => {
+                                if (data.length > index) {
+                                    if (typeof index === "number") {
+                                        //setStepData(data[index]);
+                                        setShowIndex(index);
+                                    }
                                 }
-                            }
-                        }}
-                        step={1}
-                        marks
-                        min={0}
-                        max={data.length}
-                    />
+                            }}
+                            step={1}
+                            marks
+                            min={0}
+                            max={data.length}
+                        />
+                    </div>
+                    <Button
+                        variant={"contained"}
+                        onClick={() => setIsFill(!isFill)}
+                    >
+                        {"Fill: " + isFill}
+                    </Button>
+                    <Button
+                        variant={"contained"}
+                        onClick={() => setIsScale(!isScale)}
+                    >
+                        {"Auto Scale: " + isScale}
+                    </Button>
                     <Typography variant={"body1"}>
-                        {"TimeStep: " + param.timeStep}
+                        {"AgentNum: " + data[showIndex].Agents.length}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"NeighborDist: " + param.neighborDist}
+                        {"ObstacleNum: " + data[showIndex].Obstacles.length}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"MaxNeighbors: " + param.maxNeighbors}
+                        {"TimeStep: " + param.TimeStep}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"TimeHorizon: " + param.timeHorizon}
+                        {"NeighborDist: " + param.NeighborDist}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"TimeHorizonObst: " + param.timeHorizonObst}
+                        {"MaxNeighbors: " + param.MaxNeighbors}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"Radius: " + param.radius}
+                        {"TimeHorizon: " + param.TimeHorizon}
                     </Typography>
                     <Typography variant={"body1"}>
-                        {"MaxSpeed: " + param.maxSpeed}
+                        {"TimeHorizonObst: " + param.TimeHorizonObst}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"Radius: " + param.Radius}
+                    </Typography>
+                    <Typography variant={"body1"}>
+                        {"MaxSpeed: " + param.MaxSpeed}
                     </Typography>
                 </div>
             )}

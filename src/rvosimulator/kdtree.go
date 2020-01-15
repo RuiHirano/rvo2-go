@@ -2,6 +2,7 @@ package rvosimulator
 
 import (
 	"math"
+	//"log"
 )
 
 var (
@@ -401,9 +402,11 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 		} else {
 			tNode = node.Right
 		}
+		
 		kt.QueryObstacleTreeRecursive(agent, rangeSq, tNode)
 
 		distSqLine = math.Pow(agentLeftOfLine, 2) / Sqr(Sub(obstacle2.Point, obstacle1.Point))
+		//log.Printf("distSqLine: %v\n", distSqLine)
 
 		if distSqLine < rangeSq {
 			if agentLeftOfLine < 0 {
