@@ -1,6 +1,6 @@
 package rvosimulator
 
-
+import "log"
 var (
 	Sim *RVOSimulator
 )
@@ -42,6 +42,8 @@ func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, t
 		GlobalTime:   0.0,
 	}
 	Sim = sim
+
+	log.Printf("test!!!!!!")
 
 	return sim
 }
@@ -224,7 +226,7 @@ func (rvo *RVOSimulator) IsAgentReachedGoal(agentNo int) bool {
 
 // GetAgentGoalVector :
 func (rvo *RVOSimulator) GetAgentGoalVector(agentNo int) *Vector2 {
-	return Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo))
+	return Normalize(Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo)))
 }
 
 // GetAgents:

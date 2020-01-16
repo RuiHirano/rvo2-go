@@ -12,16 +12,19 @@ import (
 func setupScenario(sim *rvo.RVOSimulator) {
 
 	for i := 0; i < 50; i++ {
-		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: 2.4+ 0.01*rand.Float64(), Y: 0 + 0.01*rand.Float64()})
-		sim.SetAgentPrefVelocity(id, &rvo.Vector2{X: -2+ 0.01*rand.Float64(), Y: 0+ 0.01*rand.Float64()})
+		id, _ := sim.AddDefaultAgent(&rvo.Vector2{X: float64(136.974694) + 0.0001*rand.Float64(), Y:  35.158200 + 0.0001*rand.Float64()})
+		goal := &rvo.Vector2{X: 136.974640, Y:  35.157671}
+		sim.SetAgentGoal(id, goal)
+		goalVector := sim.GetAgentGoalVector(id)
+		sim.SetAgentPrefVelocity(id, goalVector)
 	}
 
-	obstacle := []*rvo.Vector2{
-		&rvo.Vector2{X: 2.2, Y: -0.10},
-		&rvo.Vector2{X: 2.2, Y: 0.3},
+	/*obstacle := []*rvo.Vector2{
+		&rvo.Vector2{X: 236.121324222, Y: 135.331234123},
+		&rvo.Vector2{X: 233.12124123422, Y: 236.32134123433},
 	}
 	sim.AddObstacle(obstacle)
-	sim.ProcessObstacles()
+	sim.ProcessObstacles()*/
 
 	fmt.Printf("Simulation has %v agents and %v obstacle vertices in it.\n", sim.GetNumAgents(), sim.GetNumObstacleVertices())
 	fmt.Printf("Running Simulation...\n\n")
@@ -37,26 +40,38 @@ func showStatus(sim *rvo.RVOSimulator, step int){
 
 }
 
+func setPreferredVelocities(sim *rvo.RVOSimulator) {
+	for i := 0; i < sim.GetNumAgents(); i++ {
+		goalVector := sim.GetAgentGoalVector(i)
+		sim.SetAgentPrefVelocity(i, goalVector)
+	}
+}
+
 func main() {
-	timeStep := 0.20
-	neighborDist := 0.05 
-	maxneighbors := 5  
-	timeHorizon := 0.5
-	timeHorizonObst := 0.5
-	radius := 0.01  
-	maxSpeed := 0.1 
+	timeStep := float64(1)
+	neighborDist := 0.0005 // どのくらいの距離の相手をNeighborと認識するか?Neighborとの距離をどのくらいに保つか？ぶつかったと認識する距離？
+	maxneighbors := 10   // 周り何体を計算対象とするか
+	timeHorizon := 1.0
+	timeHorizonObst := 1.0
+	radius := 0.0001  // エージェントの半径
+	maxSpeed := 0.001 // エージェントの最大スピード
 	sim := rvo.NewRVOSimulator(timeStep, neighborDist, maxneighbors, timeHorizon, timeHorizonObst, radius, maxSpeed, &rvo.Vector2{X: 0, Y: 0})
 	setupScenario(sim)
 	// monitor 
 	mo := monitor.NewMonitor(sim)
 
-	for step := 0; step < 15; step++ {
+	for step := 0; step < 50; step++ {
 		sim.DoStep()
+		setPreferredVelocities(sim)
 
 		showStatus(sim, step)
 
 		// add data for monitor
 		mo.AddData(sim)
+		
+		if sim.IsReachedGoal(){
+			break
+		}
 	}
 
 	// run monitor server
