@@ -88,14 +88,14 @@ func NewAgent(id int, position *Vector2, radius float64, timeHorizon float64, ti
 // ComputeNeighbors
 func (a *Agent) ComputeNeighbors() {
 	a.ObstacleNeighbors = make([]*ObstacleNeighbor, 0)
-	rangeSq := GRound(math.Pow(a.TimeHorizonObst*a.MaxSpeed+a.Radius, 2))
+	rangeSq := math.Pow(a.TimeHorizonObst*a.MaxSpeed+a.Radius, 2)
 
 	Sim.KdTree.ComputeObstacleNeighbors(a, rangeSq)
 
 	a.AgentNeighbors = make([]*AgentNeighbor, 0)
 
 	if a.MaxNeighbors > 0 {
-		rangeSq = GRound(math.Pow(a.NeighborDist, 2))
+		rangeSq = math.Pow(a.NeighborDist, 2)
 		Sim.KdTree.ComputeAgentNeighbors(a, rangeSq)
 	}
 }
@@ -201,7 +201,7 @@ func (a *Agent) ComputeNewVelocity() {
 
 			obstacle2 = obstacle1
 
-			leg1 = GRound(math.Sqrt(distSq1 - radiusSq))
+			leg1 = math.Sqrt(distSq1 - radiusSq)
 			leftLegDirection = Div(NewVector2(relativePosition1.X*leg1-relativePosition1.Y*a.Radius, relativePosition1.X*a.Radius+relativePosition1.Y*leg1), distSq1)
 			rightLegDirection = Div(NewVector2(relativePosition1.X*leg1+relativePosition1.Y*a.Radius, -relativePosition1.X*a.Radius+relativePosition1.Y*leg1), distSq1)
 		} else if s > 1 && distSqLine <= radiusSq {
@@ -216,13 +216,13 @@ func (a *Agent) ComputeNewVelocity() {
 
 			obstacle1 = obstacle2
 
-			leg2 = GRound(math.Sqrt(distSq2 - radiusSq))
+			leg2 = math.Sqrt(distSq2 - radiusSq)
 			leftLegDirection = Div(NewVector2(relativePosition2.X*leg2-relativePosition2.Y*a.Radius, relativePosition2.X*a.Radius+relativePosition2.Y*leg2), distSq2)
 			rightLegDirection = Div(NewVector2(relativePosition2.X*leg2+relativePosition2.Y*a.Radius, -relativePosition2.X*a.Radius+relativePosition2.Y*leg2), distSq2)
 		} else {
 			/* Usual situation. */
 			if obstacle1.IsConvex {
-				leg1 = GRound(math.Sqrt(distSq1 - radiusSq))
+				leg1 = math.Sqrt(distSq1 - radiusSq)
 				leftLegDirection = Div(NewVector2(relativePosition1.X*leg1-relativePosition1.Y*a.Radius, relativePosition1.X*a.Radius+relativePosition1.Y*leg1), distSq1)
 			} else {
 				/* Left vertex non-convex; left leg extends cut-off line. */
@@ -230,7 +230,7 @@ func (a *Agent) ComputeNewVelocity() {
 			}
 
 			if obstacle2.IsConvex {
-				leg2 = GRound(math.Sqrt(distSq2 - radiusSq))
+				leg2 = math.Sqrt(distSq2 - radiusSq)
 				rightLegDirection = Div(NewVector2(relativePosition2.X*leg2+relativePosition2.Y*a.Radius, -relativePosition2.X*a.Radius+relativePosition2.Y*leg2), distSq2)
 			} else {
 				/* Right vertex non-convex; right leg extends cut-off line. */
@@ -388,14 +388,14 @@ func (a *Agent) ComputeNewVelocity() {
 
 			if dotProduct1 < 0 && math.Pow(dotProduct1, 2) > combinedRadiusSq*wLengthSq {
 				/* Project on cut-off circle. */
-				wLength = GRound(math.Sqrt(wLengthSq))
+				wLength = math.Sqrt(wLengthSq)
 				unitW = Div(w, wLength)
 
 				line.Direction = NewVector2(unitW.Y, -unitW.X)
 				u = MulOne(unitW, (combinedRadius*invTimeHorizon - wLength))
 			} else {
 				/* Project on legs. */
-				leg = GRound(math.Sqrt(distSq - combinedRadiusSq))
+				leg = math.Sqrt(distSq - combinedRadiusSq)
 
 				if Det(relativePosition, w) > 0 {
 					/* Project on left leg. */
@@ -523,9 +523,9 @@ func (a *Agent) LinearProgram1(lines []*Line, lineNo int, radius float64, optVel
 	}
 
 	var sqrtDiscriminant, tLeft, tRight float64
-	sqrtDiscriminant = GRound(math.Sqrt(discriminant))
-	tLeft = GRound(-dotProduct - sqrtDiscriminant)
-	tRight = GRound(-dotProduct + sqrtDiscriminant)
+	sqrtDiscriminant = math.Sqrt(discriminant)
+	tLeft = -dotProduct - sqrtDiscriminant
+	tRight = -dotProduct + sqrtDiscriminant
 
 	for i := 0; i < lineNo; i++ {
 		var denominator, numerator float64
