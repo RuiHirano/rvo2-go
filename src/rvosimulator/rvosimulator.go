@@ -224,7 +224,7 @@ func (rvo *RVOSimulator) IsAgentReachedGoal(agentNo int) bool {
 
 // GetAgentGoalVector :
 func (rvo *RVOSimulator) GetAgentGoalVector(agentNo int) *Vector2 {
-	return Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo))
+	return Normalize(Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo)))
 }
 
 // GetAgents:
