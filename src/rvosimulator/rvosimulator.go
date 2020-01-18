@@ -1,6 +1,6 @@
 package rvosimulator
 
-
+import "log"
 var (
 	Sim *RVOSimulator
 )
@@ -42,6 +42,8 @@ func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, t
 		GlobalTime:   0.0,
 	}
 	Sim = sim
+
+	log.Printf("test!!!!!!")
 
 	return sim
 }
