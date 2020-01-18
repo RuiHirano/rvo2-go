@@ -194,7 +194,6 @@ func (a *Agent) ComputeNewVelocity() {
 			 * defines velocity obstacle.
 			 */
 			if !obstacle1.IsConvex {
-
 				/* Ignore obstacle. */
 				continue
 			}
@@ -202,6 +201,7 @@ func (a *Agent) ComputeNewVelocity() {
 			obstacle2 = obstacle1
 
 			leg1 = math.Sqrt(distSq1 - radiusSq)
+
 			leftLegDirection = Div(NewVector2(relativePosition1.X*leg1-relativePosition1.Y*a.Radius, relativePosition1.X*a.Radius+relativePosition1.Y*leg1), distSq1)
 			rightLegDirection = Div(NewVector2(relativePosition1.X*leg1+relativePosition1.Y*a.Radius, -relativePosition1.X*a.Radius+relativePosition1.Y*leg1), distSq1)
 		} else if s > 1 && distSqLine <= radiusSq {
@@ -326,7 +326,6 @@ func (a *Agent) ComputeNewVelocity() {
 			line.Direction = Flip(obstacle1.UnitDir)
 			line.Point = Add(leftCutoff, MulOne(NewVector2(-line.Direction.Y, line.Direction.X), a.Radius*invTimeHorizonObst))
 			a.OrcaLines = append(a.OrcaLines, &line)
-			
 			continue
 		} else if distSqLeft <= distSqRight {
 			/* Project on left leg. */
@@ -337,7 +336,6 @@ func (a *Agent) ComputeNewVelocity() {
 			line.Direction = leftLegDirection
 			line.Point = Add(leftCutoff, MulOne(NewVector2(-line.Direction.Y, line.Direction.X), a.Radius*invTimeHorizonObst))
 			a.OrcaLines = append(a.OrcaLines, &line)
-
 			continue
 		} else {
 			/* Project on right leg. */
@@ -348,7 +346,6 @@ func (a *Agent) ComputeNewVelocity() {
 			line.Direction = Flip(rightLegDirection)
 			line.Point = Add(rightCutoff, MulOne(NewVector2(-line.Direction.Y, line.Direction.X), a.Radius*invTimeHorizonObst))
 			a.OrcaLines = append(a.OrcaLines, &line)
-
 			continue
 		}
 	}
@@ -396,7 +393,6 @@ func (a *Agent) ComputeNewVelocity() {
 			} else {
 				/* Project on legs. */
 				leg = math.Sqrt(distSq - combinedRadiusSq)
-
 				if Det(relativePosition, w) > 0 {
 					/* Project on left leg. */
 					line.Direction = Div(NewVector2(relativePosition.X*leg-relativePosition.Y*combinedRadius, relativePosition.X*combinedRadius+relativePosition.Y*leg), distSq)
@@ -416,7 +412,6 @@ func (a *Agent) ComputeNewVelocity() {
 
 			/* Vector from cutoff center to relative velocity. */
 			w = Sub(relativeVelocity, MulOne(relativePosition, invTimeStep))
-
 			wLength = Abs(w)
 			unitW = Div(w, wLength)
 
@@ -433,13 +428,13 @@ func (a *Agent) ComputeNewVelocity() {
 		a.LinearProgram3(a.OrcaLines, numObstLines, lineFail, a.MaxSpeed)
 	}
 
+
 }
 
 // InsertAgentNeighbor
 func (a *Agent) InsertAgentNeighbor(agent *Agent, rangeSq float64) {
 	if a != agent {
 		distSq := Sqr(Sub(a.Position, agent.Position))
-		//agent.Positionが違う
 
 		// 2Agent間の距離が半径よりも近かった場合
 		if distSq < rangeSq {
@@ -449,8 +444,6 @@ func (a *Agent) InsertAgentNeighbor(agent *Agent, rangeSq float64) {
 
 			i := len(a.AgentNeighbors) - 1
 
-			// 距離が短い順に並び替え
-			// うまく並び替えれていない
 			for {
 				if i != 0 && distSq < a.AgentNeighbors[i-1].DistSq {
 					a.AgentNeighbors[i] = a.AgentNeighbors[i-1]
@@ -474,7 +467,6 @@ func (a *Agent) InsertAgentNeighbor(agent *Agent, rangeSq float64) {
 
 // InsertObstacleNeighbor
 func (a *Agent) InsertObstacleNeighbor(obstacle *Obstacle, rangeSq float64) {
-	
 	nextObstacle := obstacle.NextObstacle
 
 	distSq := DistSqPointLineSegment(obstacle.Point, nextObstacle.Point, a.Position)

@@ -213,7 +213,7 @@ func (kt *KdTree) BuildObstacleTreeRecursive(obstacles []*Obstacle) *ObstacleTre
 		minLeft := len(obstacles)
 		minRight := len(obstacles)
 
-		// Compute optimal split node. 左右の最適な分け方を計算
+		// Compute optimal split node.
 		for i := 0; i < len(obstacles); i++ {
 			leftSize := 0
 			rightSize := 0
@@ -411,16 +411,27 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 				agent.InsertObstacleNeighbor(node.Obstacle, rangeSq)
 			}
 
+			// Caution! Modified From RVO2  Original Library
 			/* Try other side of line. */
-			var t2Node *ObstacleTreeNode
+			/*var t2Node *ObstacleTreeNode
 			if agentLeftOfLine >= 0 {
 				t2Node = node.Right
 			} else {
 				t2Node = node.Left
 			}
-			kt.QueryObstacleTreeRecursive(agent, rangeSq, t2Node)
+			kt.QueryObstacleTreeRecursive(agent, rangeSq, t2Node)*/
+			
 
 		}
+
+		/* Try other side of line. */
+		var t2Node *ObstacleTreeNode
+		if agentLeftOfLine >= 0 {
+			t2Node = node.Right
+		} else {
+			t2Node = node.Left
+		}
+		kt.QueryObstacleTreeRecursive(agent, rangeSq, t2Node)
 	}
 }
 
