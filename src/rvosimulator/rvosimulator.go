@@ -121,12 +121,22 @@ func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNe
 	return agent.ID, false
 }
 
-// RemoveAgent : Remove agent by id
-func (rvo *RVOSimulator) RemoveAgent(id int) bool {
+// RemoveAgent : Remove agent by agentNo
+func (rvo *RVOSimulator) RemoveAgent(agentNo int) bool {
 
-	rvo.Agents = append(rvo.Agents[:id], rvo.Agents[id+1:]...)
+	rvo.Agents = append(rvo.Agents[:agentNo], rvo.Agents[agentNo+1:]...)
 
 	return false
+}
+
+// GetAgentNoByID : Get Agent No. by Agent ID
+func (rvo *RVOSimulator) GetAgentNoByID(id int) int {
+	for i := 0; i < rvo.GetNumAgents(); i++ {
+		if rvo.GetAgent(i).ID == id {
+			return i
+		}
+	}
+	return -1
 }
 
 // AddObstacle : Add Obstacle with vertices
