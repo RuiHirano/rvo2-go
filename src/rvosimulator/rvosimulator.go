@@ -9,13 +9,14 @@ func init() {
 
 // RVOSimulator :
 type RVOSimulator struct {
-	TimeStep     float64
-	Agents       []*Agent
-	Obstacles    [][]*Vector2
-	ObstacleVertices    []*Obstacle
-	KdTree       *KdTree
-	DefaultAgent *Agent
-	GlobalTime   float64
+	TimeStep         float64
+	Agents           []*Agent
+	Obstacles        [][]*Vector2
+	ObstacleVertices []*Obstacle
+	KdTree           *KdTree
+	DefaultAgent     *Agent
+	GlobalTime       float64
+	NextAgentID      int
 }
 
 // NewRVOSimulator : RVOSimulator with options
@@ -32,13 +33,14 @@ func NewRVOSimulator(timeStep float64, neighborDist float64, maxNeighbors int, t
 	defaultAgent.Velocity = velocity
 
 	sim := &RVOSimulator{
-		TimeStep:     timeStep,
-		Agents:       make([]*Agent, 0),
-		Obstacles:    make([][]*Vector2, 0),
-		ObstacleVertices:    make([]*Obstacle, 0),
-		KdTree:       kdTree,
-		DefaultAgent: defaultAgent,
-		GlobalTime:   0.0,
+		TimeStep:         timeStep,
+		Agents:           make([]*Agent, 0),
+		Obstacles:        make([][]*Vector2, 0),
+		ObstacleVertices: make([]*Obstacle, 0),
+		KdTree:           kdTree,
+		DefaultAgent:     defaultAgent,
+		GlobalTime:       0.0,
+		NextAgentID:      0,
 	}
 	Sim = sim
 
@@ -51,13 +53,13 @@ func NewEmptyRVOSimulator() *RVOSimulator {
 	defaultAgent := NewEmptyAgent()
 
 	sim := &RVOSimulator{
-		TimeStep:     0,
-		Agents:       make([]*Agent, 0),
-		Obstacles:    make([][]*Vector2, 0),
-		ObstacleVertices:    make([]*Obstacle, 0),
-		KdTree:       kdTree,
-		DefaultAgent: defaultAgent,
-		GlobalTime:   0.0,
+		TimeStep:         0,
+		Agents:           make([]*Agent, 0),
+		Obstacles:        make([][]*Vector2, 0),
+		ObstacleVertices: make([]*Obstacle, 0),
+		KdTree:           kdTree,
+		DefaultAgent:     defaultAgent,
+		GlobalTime:       0.0,
 	}
 	Sim = sim
 	return sim
@@ -91,11 +93,12 @@ func (rvo *RVOSimulator) AddDefaultAgent(position *Vector2) (int, bool) {
 	agent.TimeHorizon = rvo.DefaultAgent.TimeHorizon
 	agent.TimeHorizonObst = rvo.DefaultAgent.TimeHorizonObst
 	agent.Velocity = rvo.DefaultAgent.Velocity
-	agent.ID = len(rvo.Agents)
+	agent.ID = rvo.NextAgentID
 
 	rvo.Agents = append(rvo.Agents, agent)
+	rvo.NextAgentID++
 
-	return len(rvo.Agents) - 1, false
+	return agent.ID, false
 }
 
 // AddAgent : Add agent with options
@@ -110,11 +113,30 @@ func (rvo *RVOSimulator) AddAgent(position *Vector2, neighborDist float64, maxNe
 	agent.TimeHorizon = timeHorizon
 	agent.TimeHorizonObst = timeHorizonObst
 	agent.Velocity = velocity
-	agent.ID = len(rvo.Agents)
+	agent.ID = rvo.NextAgentID
 
 	rvo.Agents = append(rvo.Agents, agent)
+	rvo.NextAgentID++
 
-	return len(rvo.Agents) - 1, false
+	return agent.ID, false
+}
+
+// RemoveAgent : Remove agent by agentNo
+func (rvo *RVOSimulator) RemoveAgent(agentNo int) bool {
+
+	rvo.Agents = append(rvo.Agents[:agentNo], rvo.Agents[agentNo+1:]...)
+
+	return false
+}
+
+// GetAgentNoByID : Get Agent No. by Agent ID
+func (rvo *RVOSimulator) GetAgentNoByID(id int) int {
+	for i := 0; i < rvo.GetNumAgents(); i++ {
+		if rvo.GetAgent(i).ID == id {
+			return i
+		}
+	}
+	return -1
 }
 
 // AddObstacle : Add Obstacle with vertices
@@ -147,7 +169,6 @@ func (rvo *RVOSimulator) AddObstacle(vertices []*Vector2) (int, bool) {
 			obstacle.NextObstacle = rvo.ObstacleVertices[obstacleNo]
 			obstacle.NextObstacle.PrevObstacle = obstacle
 		}
-		
 
 		var ti int
 		if i == len(vertices)-1 {
@@ -226,12 +247,12 @@ func (rvo *RVOSimulator) GetAgentGoalVector(agentNo int) *Vector2 {
 	return Normalize(Sub(rvo.GetAgentGoal(agentNo), rvo.GetAgentPosition(agentNo)))
 }
 
-// GetAgents:
+// GetAgents :
 func (rvo *RVOSimulator) GetAgents() []*Agent {
 	return rvo.Agents
 }
 
-// GetAgent:
+// GetAgent :
 func (rvo *RVOSimulator) GetAgent(agentNo int) *Agent {
 	return rvo.Agents[agentNo]
 }
@@ -363,7 +384,7 @@ func (rvo *RVOSimulator) GetNumObstacles() int {
 	return len(rvo.Obstacles)
 }
 
-// GetObstacle:
+// GetObstacle :
 func (rvo *RVOSimulator) GetObstacle(obstacleNo int) []*Vector2 {
 	return rvo.Obstacles[obstacleNo]
 }

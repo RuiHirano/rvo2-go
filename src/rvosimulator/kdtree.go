@@ -73,6 +73,7 @@ func NewKdTree() *KdTree {
 
 // BuildAgentTree :
 func (kt *KdTree) BuildAgentTree() {
+	kt.Agents = nil
 	if len(kt.Agents) < len(Sim.Agents) {
 		for i := len(kt.Agents); i < len(Sim.Agents); i++ {
 
@@ -394,14 +395,14 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 
 		var agentLeftOfLine, distSqLine float64
 		agentLeftOfLine = LeftOf(obstacle1.Point, obstacle2.Point, agent.Position)
-		
+
 		var tNode *ObstacleTreeNode
 		if agentLeftOfLine >= 0 {
 			tNode = node.Left
 		} else {
 			tNode = node.Right
 		}
-		
+
 		kt.QueryObstacleTreeRecursive(agent, rangeSq, tNode)
 
 		distSqLine = math.Pow(agentLeftOfLine, 2) / Sqr(Sub(obstacle2.Point, obstacle1.Point))
@@ -420,7 +421,6 @@ func (kt *KdTree) QueryObstacleTreeRecursive(agent *Agent, rangeSq float64, node
 				t2Node = node.Left
 			}
 			kt.QueryObstacleTreeRecursive(agent, rangeSq, t2Node)*/
-			
 
 		}
 
